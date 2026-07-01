@@ -1,0 +1,4 @@
+.git/
+.haxelib/
+export/
+.vscode/launch.json
