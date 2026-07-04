@@ -1,5 +1,6 @@
 package states;
 
+import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -8,6 +9,7 @@ import flixel.addons.ui.FlxUIButton;
 import flixel.addons.ui.FlxUISpriteButton;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxGroup;
+import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.text.FlxText;
 import flixel.ui.FlxButton;
@@ -16,6 +18,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxSort;
 import flixel.util.FlxTimer;
 import gameObjects.data.TurnPlayer;
+import gameObjects.ui.PandoraScrollbar;
 import gameObjects.ui.TurnPlayerDraggable;
 import openfl.net.FileReference;
 
@@ -37,14 +40,27 @@ class TurnState extends PandoraState
     var plrGroup:FlxTypedGroup<TurnPlayerDraggable>;
     var plrStart:Float = FlxG.height / 2 - 150;
 
+    var scrollCam:FlxCamera;
+    var scrollbar:PandoraScrollbar;
+
 	override public function create()
 	{
 		super.create();
 		bgColor = 0xFF0f0f1a;
 
+        scrollCam = new FlxCamera(0, plrStart, FlxG.width, FlxG.height);
+		FlxG.cameras.add(scrollCam, false);
+
+        scrollbar = new PandoraScrollbar(0, 0, FlxG.height - plrStart, 0.1);
+        scrollbar.cameras = [scrollCam];
+        scrollbar.x = scrollCam.width - scrollbar.bg.width;
+        scrollbar.scrollFactor.set(0, 0);
+        add(scrollbar);
+
         initInputPart();
 
         plrGroup = new FlxTypedGroup<TurnPlayerDraggable>();
+        plrGroup.cameras = [scrollCam];
         add(plrGroup);
 	}
 
@@ -161,6 +177,7 @@ class TurnState extends PandoraState
         var draggable:TurnPlayerDraggable = new TurnPlayerDraggable(0, 0, plr, Y);
         // draggable.minDrag = new FlxPoint(0, plrStart - 40);
         // draggable.maxDrag = new FlxPoint(FlxG.width, FlxG.height - draggable.height);
+        draggable.cameras = [scrollCam];
         draggable.screenCenter(X);
         plrGroup.add(draggable);
         draggable.dragCallback = function()
@@ -255,7 +272,7 @@ class TurnState extends PandoraState
         {
             var plr = plrGroup.members[i];
 
-            plr.y = (plrStart) + plr.height * i;
+            plr.y = plr.height * i;
         }
     }
 
@@ -303,6 +320,36 @@ class TurnState extends PandoraState
 
         if (FlxG.keys.justPressed.ESCAPE)
             switchState(new TitleState());
+        
+        handleCameraScroll();
+
+        /*
+        if (FlxG.mouse.wheel != 0)
+        {
+            var scrollSpeed:Float = 20;
+            var newY:Float = scrollCam.scroll.y - (FlxG.mouse.wheel * scrollSpeed);
+
+            newY = Math.max(0, Math.min(FlxG.height, newY));
+
+            scrollCam.scroll.y = newY;
+        }
+        */
+    }
+
+    var targetScrollY:Float = 0;
+    final scrollSpeed:Float = 30;
+    final scrollLerpSpeed:Float = 0.15; // 0 = no mov - 1 = instant
+    private function handleCameraScroll():Void
+    {
+        if (FlxG.mouse.wheel != 0)
+        {
+            targetScrollY -= FlxG.mouse.wheel * scrollSpeed;
+
+            targetScrollY = Math.max(0, Math.min(FlxG.height, targetScrollY));
+        }
+
+        scrollCam.scroll.y = FlxMath.lerp(scrollCam.scroll.y, targetScrollY, scrollLerpSpeed);
+        scrollbar.set_scrollPercent((scrollCam.scroll.y - 0) / (FlxG.height - 0));
     }
 
     private function saveToFile():Void

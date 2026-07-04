@@ -97,31 +97,32 @@ class TurnPlayerDraggable extends FlxSpriteContainer
 
         if (dragging)
         {
+            var worldPos:FlxPoint = FlxG.mouse.getWorldPosition(camera);
+
             switch (dragStyle)
             {
                 case X:
-                    var dx:Float = FlxG.mouse.screenX + width / 2;
+                    var dx:Float = worldPos.x + width / 2;
                     if (maxDrag != null && minDrag != null)
                         if (dx >= maxDrag.x || dx <= minDrag.x)
                             return;
-
                     x = dx;
                 case Y:
-                    var dy:Float = FlxG.mouse.screenY - height / 2;
+                    var dy:Float = worldPos.y - height / 2;
                     if (maxDrag != null && minDrag != null)
                         if (dy >= maxDrag.y || dy <= minDrag.y)
                             return;
-                    
                     y = dy;
                 default:
-                    var dx:Float = FlxG.mouse.screenX + width / 2;
-                    var dy:Float = FlxG.mouse.screenY - height / 2;
+                    var dx:Float = worldPos.x + width / 2;
+                    var dy:Float = worldPos.y - height / 2;
                     if (maxDrag != null && minDrag != null)
                         if ((dx >= maxDrag.x || dx <= minDrag.x) || (dy >= maxDrag.y || dy <= minDrag.y))
                             return;
-
                     setPosition(dx, dy);
             }
+
+            worldPos.put(); // recycle
 
             if (FlxG.mouse.justReleased)
                 onUp();
