@@ -55,6 +55,7 @@ class TurnState extends PandoraState
 		bgColor = 0xFF0f0f1a;
 
         scrollCam = new FlxCamera(0, plrStart, FlxG.width, FlxG.height);
+		scrollCam.bgColor = 0xff303053;
         transitionCam = new FlxCamera();
         transitionCam.bgColor = FlxColor.TRANSPARENT;
 		FlxG.cameras.add(scrollCam, false);
@@ -123,6 +124,10 @@ class TurnState extends PandoraState
         helpText.blend = INVERT;
         helpText.cameras = [transitionCam];
         add(helpText);
+
+        var divider:FlxSprite = new FlxSprite(0, plrStart - 3).makeGraphic(FlxG.width, 3, FlxColor.WHITE);
+        divider.alpha = 0.3;
+        add(divider);
     }
 
     private function centerEvenlyX(arr:Array<FlxText>, top:Float, bottom:Float):Void
