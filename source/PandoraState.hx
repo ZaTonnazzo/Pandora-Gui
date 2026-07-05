@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.util.FlxColor;
@@ -33,7 +34,9 @@ class PandoraState extends FlxState
 	public function transIn():Void
 	{
 		transitioning = true;
-		FlxG.camera.fade(fadeColor, transitionTime, true, function()
+
+		var farthestCam:FlxCamera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
+		farthestCam.fade(fadeColor, transitionTime, true, function()
 		{
 			transitioning = false;
 		});
@@ -42,7 +45,9 @@ class PandoraState extends FlxState
 	public function transOut(state:FlxState):Void
 	{
 		transitioning = true;
-		FlxG.camera.fade(fadeColor, transitionTime, false, function()
+		
+		var farthestCam:FlxCamera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
+		farthestCam.fade(fadeColor, transitionTime, false, function()
 		{
 			FlxG.switchState(state);
 		});

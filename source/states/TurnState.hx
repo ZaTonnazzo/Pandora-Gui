@@ -35,13 +35,19 @@ class TurnState extends PandoraState
     var scoreDesc:String = "Iniziativa: ";
     var nameLabel:FlxText;
     var scoreLabel:FlxText;
+    var helpText:FlxText;
     var randomizerBtn:FlxUISpriteButton;
     var inputArr:Array<FlxText> = [];
     var plrGroup:FlxTypedGroup<TurnPlayerDraggable>;
     var plrStart:Float = FlxG.height / 2 - 150;
 
+    var transitionCam:FlxCamera; // so that transitions are still nice to watch
     var scrollCam:FlxCamera;
     var scrollbar:PandoraScrollbar;
+    var targetScrollY:Float = 0;
+    var maxScrollY:Float = 0;
+    var viewportHeight:Float;
+    var playerHeight:Float = 0;
 
 	override public function create()
 	{
@@ -49,19 +55,27 @@ class TurnState extends PandoraState
 		bgColor = 0xFF0f0f1a;
 
         scrollCam = new FlxCamera(0, plrStart, FlxG.width, FlxG.height);
+        transitionCam = new FlxCamera();
+        transitionCam.bgColor = FlxColor.TRANSPARENT;
 		FlxG.cameras.add(scrollCam, false);
-
-        scrollbar = new PandoraScrollbar(0, 0, FlxG.height - plrStart, 0.1);
-        scrollbar.cameras = [scrollCam];
-        scrollbar.x = scrollCam.width - scrollbar.bg.width;
-        scrollbar.scrollFactor.set(0, 0);
-        add(scrollbar);
+		FlxG.cameras.add(transitionCam, false);
 
         initInputPart();
 
         plrGroup = new FlxTypedGroup<TurnPlayerDraggable>();
         plrGroup.cameras = [scrollCam];
         add(plrGroup);
+
+        scrollbar = new PandoraScrollbar(0, 0, FlxG.height - plrStart, 0.1);
+        scrollbar.cameras = [scrollCam];
+        scrollbar.x = scrollCam.width - scrollbar.bg.width;
+        scrollbar.scrollFactor.set(0, 0);
+        scrollbar.onScroll = function(v:Float)
+        {
+            targetScrollY = v * maxScrollY;
+        };
+        scrollbar.visible = false;
+        add(scrollbar);
 	}
 
     private function initInputPart():Void
@@ -102,12 +116,13 @@ class TurnState extends PandoraState
         // randomizerBtn.setAllLabelOffsets(1, 1);
         add(randomizerBtn);
 
-        var help:FlxText = new FlxText(0, 0, 0, "F1 per salvare in un file di testo\nTasto destro mentre trascini un giocatore per eliminarlo", 20);
-        help.setFormat(null, 20, FlxColor.WHITE, RIGHT);
-        help.setPosition(FlxG.width - help.width, FlxG.height - help.height);
-        help.alpha = 0.5;
-        help.blend = INVERT;
-        add(help);
+        helpText = new FlxText(0, 0, 0, "F1 per salvare in un file di testo.\nTasto destro mentre trascini un giocatore per eliminarlo.\nF2 per nascondere queste istruzioni.", 16);
+        helpText.setFormat(null, 16, FlxColor.WHITE, LEFT);
+        helpText.setPosition(/*FlxG.width - helpText.width*/ 0, FlxG.height - helpText.height);
+        helpText.alpha = 0.5;
+        helpText.blend = INVERT;
+        helpText.cameras = [transitionCam];
+        add(helpText);
     }
 
     private function centerEvenlyX(arr:Array<FlxText>, top:Float, bottom:Float):Void
@@ -208,6 +223,7 @@ class TurnState extends PandoraState
         draggable.deleteCallback = function()
         {
             plrGroup.remove(draggable, true);
+            updateScrollBounds();
         };
 
         plrGroup.sort(function (i:Int, x:TurnPlayerDraggable, y:TurnPlayerDraggable)
@@ -225,6 +241,7 @@ class TurnState extends PandoraState
             return 0;
         });
         positionPlrs();
+        updateScrollBounds();
 
         /*
         var result:String = "";
@@ -289,6 +306,24 @@ class TurnState extends PandoraState
         });
     }
 
+    private function updateScrollBounds():Void
+    {
+        if (playerHeight == 0 && plrGroup.members.length > 0)
+            playerHeight = plrGroup.members[0].height;
+
+        viewportHeight = FlxG.height - plrStart;
+        var contentHeight:Float = plrGroup.members.length * playerHeight;
+        var ratio:Float = contentHeight > 0 ? Math.min(1, viewportHeight / contentHeight) : 1;
+        scrollbar.setBarRatio(ratio);
+
+        maxScrollY = Math.max(0, contentHeight - viewportHeight);
+
+        scrollbar.canScroll = maxScrollY > 0;
+        scrollbar.visible = maxScrollY > 0;
+
+        targetScrollY = FlxMath.bound(targetScrollY, 0, maxScrollY);
+    }
+
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -305,6 +340,9 @@ class TurnState extends PandoraState
         }
 
         handleInput();
+        
+        scrollCam.scroll.y = FlxMath.lerp(scrollCam.scroll.y, targetScrollY, 0.15);
+        scrollCam.scroll.y = FlxMath.bound(scrollCam.scroll.y, 0, maxScrollY);
 	}
 
     private function handleInput():Void
@@ -318,10 +356,11 @@ class TurnState extends PandoraState
         if (FlxG.keys.justPressed.F1)
             saveToFile();
 
+        if (FlxG.keys.justPressed.F2)
+            helpText.visible = !helpText.visible;
+
         if (FlxG.keys.justPressed.ESCAPE)
             switchState(new TitleState());
-        
-        handleCameraScroll();
 
         /*
         if (FlxG.mouse.wheel != 0)
@@ -334,22 +373,6 @@ class TurnState extends PandoraState
             scrollCam.scroll.y = newY;
         }
         */
-    }
-
-    var targetScrollY:Float = 0;
-    final scrollSpeed:Float = 30;
-    final scrollLerpSpeed:Float = 0.15; // 0 = no mov - 1 = instant
-    private function handleCameraScroll():Void
-    {
-        if (FlxG.mouse.wheel != 0)
-        {
-            targetScrollY -= FlxG.mouse.wheel * scrollSpeed;
-
-            targetScrollY = Math.max(0, Math.min(FlxG.height, targetScrollY));
-        }
-
-        scrollCam.scroll.y = FlxMath.lerp(scrollCam.scroll.y, targetScrollY, scrollLerpSpeed);
-        scrollbar.set_scrollPercent((scrollCam.scroll.y - 0) / (FlxG.height - 0));
     }
 
     private function saveToFile():Void
