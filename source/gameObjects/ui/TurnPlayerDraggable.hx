@@ -83,9 +83,9 @@ class TurnPlayerDraggable extends FlxSpriteContainer
 
         if (dragging)
         {
-            if (FlxG.mouse.pressedRight)
+            if (FlxG.mouse.pressedRight || FlxG.keys.pressed.DELETE)
                 box.color = FlxColor.RED;
-            if (FlxG.mouse.justReleasedRight)
+            if (FlxG.mouse.justReleasedRight || FlxG.keys.justReleased.DELETE)
                 delete();
         }
     }

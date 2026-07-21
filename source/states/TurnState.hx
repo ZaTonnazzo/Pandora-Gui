@@ -30,6 +30,8 @@ class TurnState extends PandoraState
     public var scoreField:FlxInputText;
     public var newPlrBtn:FlxUIButton;
     public var isDragging:Bool = false;
+    private final helpStr:String =
+        "Tasto destro o Canc mentre trascini un giocatore per eliminarlo.\nF3 per riordinare.\nF2 per salvare in un file di testo.\nF1 per nascondere queste istruzioni.";
 
     var nomeDesc:String = "Nome: ";
     var scoreDesc:String = "Iniziativa: ";
@@ -117,7 +119,7 @@ class TurnState extends PandoraState
         // randomizerBtn.setAllLabelOffsets(1, 1);
         add(randomizerBtn);
 
-        helpText = new FlxText(0, 0, 0, "F1 per salvare in un file di testo.\nTasto destro mentre trascini un giocatore per eliminarlo.\nF2 per nascondere queste istruzioni.", 16);
+        helpText = new FlxText(0, 0, 0, helpStr, 16);
         helpText.setFormat(null, 16, FlxColor.WHITE, LEFT);
         helpText.setPosition(/*FlxG.width - helpText.width*/ 0, FlxG.height - helpText.height);
         helpText.alpha = 0.5;
@@ -231,6 +233,30 @@ class TurnState extends PandoraState
             updateScrollBounds();
         };
 
+        sortAndPositionPlrs();
+        updateScrollBounds();
+
+        /*
+        var result:String = "";
+        for (p in plrArr)
+        {
+            if (result == "")
+                result += "[" + p.name + " | " + p.score + "]";
+            else
+                result += (", " + "[" + p.name + " | " + p.score + "]");
+        }
+        trace(result);
+        */
+    }
+
+    private function sortAndPositionPlrs():Void
+    {
+        sortByIniziativa();
+        positionPlrs();
+    }
+
+    private function sortByIniziativa():Void
+    {
         plrGroup.sort(function (i:Int, x:TurnPlayerDraggable, y:TurnPlayerDraggable)
         {
             if (x.player.getNat() && y.player.getNat() == false)
@@ -245,20 +271,6 @@ class TurnState extends PandoraState
 
             return 0;
         });
-        positionPlrs();
-        updateScrollBounds();
-
-        /*
-        var result:String = "";
-        for (p in plrArr)
-        {
-            if (result == "")
-                result += "[" + p.name + " | " + p.score + "]";
-            else
-                result += (", " + "[" + p.name + " | " + p.score + "]");
-        }
-        trace(result);
-        */
     }
 
     private function parseScore():Null<Int>
@@ -358,10 +370,13 @@ class TurnState extends PandoraState
         if (FlxG.keys.anyJustPressed([ENTER]))
             addPlr();
 
-        if (FlxG.keys.justPressed.F1)
-            saveToFile();
+        if (FlxG.keys.justPressed.F3)
+            sortAndPositionPlrs();
 
         if (FlxG.keys.justPressed.F2)
+            saveToFile();
+
+        if (FlxG.keys.justPressed.F1)
             helpText.visible = !helpText.visible;
 
         if (FlxG.keys.justPressed.ESCAPE)
