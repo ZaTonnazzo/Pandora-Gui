@@ -10,17 +10,19 @@ using flixel.util.FlxSpriteUtil;
 
 class PandoraButton extends FlxSpriteContainer
 {
-    public var box:FlxSprite;
+    public var body:FlxSprite;
     public var label:FlxSprite;
     public var clickCallback:Void->Void;
 
-    public function new(X:Float = 0, Y:Float = 0, Width:Int = 10, Height:Int = 10, InsideColor:FlxColor = FlxColor.GRAY, OutlineColor:FlxColor = FlxColor.WHITE, OutlineThickness:Int = 5, ?label:FlxSprite)
+    private var overlay:FlxSprite;
+
+    public function new(X:Float = 0, Y:Float = 0, Width:Int = 10, Height:Int = 10, Color:FlxColor = FlxColor.GRAY, ?label:FlxSprite)
     {
         super(X, Y);
 
-        box = new FlxSprite().makeGraphic(Width, Height, FlxColor.TRANSPARENT);
-        box = box.drawRect(0, 0, box.width, box.height, InsideColor, {color: OutlineColor, thickness: OutlineThickness});
-        add(box);
+        body = new FlxSprite().makeGraphic(Width, Height, Color);
+        // body.drawRoundRectComplex(0, 0, body.width, body.height, 10, 10, 0, 0, Color);
+        add(body);
 
         if (label != null)
         {
@@ -29,28 +31,26 @@ class PandoraButton extends FlxSpriteContainer
         }
         else
         {
-            this.label = new FlxSprite(box.getMidpoint().x, box.getMidpoint().y);
+            this.label = new FlxSprite(body.getMidpoint().x, body.getMidpoint().y);
             this.label.visible = false;
             add(this.label);
         }
+
+        overlay = new FlxSprite().makeGraphic(Std.int(body.width), Std.int(body.height), FlxColor.WHITE);
+        overlay.alpha = 0;
+        add(overlay);
 
         FlxMouseEvent.add(this, onDown, onUp, onOver, onOut);
     }
 
     private function onDown(obj:FlxObject):Void
     {
-        forEachOfType(FlxSprite, function(spr:FlxSprite)
-        {
-            spr.color.black += 0.2;
-        });
+        overlay.color = FlxColor.BLACK;
     }
 
     private function onUp(obj:FlxObject):Void
     {
-        forEachOfType(FlxSprite, function(spr:FlxSprite)
-        {
-            spr.color.black -= 0.2;
-        });
+        overlay.color = FlxColor.WHITE;
 
         if (clickCallback != null)
             clickCallback();
@@ -58,18 +58,14 @@ class PandoraButton extends FlxSpriteContainer
 
     private function onOver(obj:FlxObject):Void
     {
-        forEachOfType(FlxSprite, function(spr:FlxSprite)
-        {
-            spr.color.black += 0.2;
-        });
+        overlay.alpha = 0.3;
     }
 
     private function onOut(obj:FlxObject):Void
     {
-        forEachOfType(FlxSprite, function(spr:FlxSprite)
-        {
-            spr.color.black -= 0.2;
-        });
+        if (overlay.color != FlxColor.WHITE)
+            overlay.color = FlxColor.WHITE;
+        overlay.alpha = 0;
     }
 
     override public function update(elapsed:Float)
@@ -79,11 +75,11 @@ class PandoraButton extends FlxSpriteContainer
 
     public function updateLabel(newLabel:FlxSprite):Void
     {
-        if (label != null && label.graphic == null)
+        if (label != null && label.graphic != null)
             label.visible = true;
 
         label = newLabel;
-        label.setPosition(box.getMidpoint().x - label.width / 2, box.getMidpoint().y - label.height / 2);
+        label.setPosition(body.width / 2 - label.width / 2, body.height / 2 - label.height / 2);
         label.updateHitbox();
     }
 }

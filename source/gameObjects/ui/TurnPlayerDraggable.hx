@@ -19,6 +19,7 @@ class TurnPlayerDraggable extends FlxSpriteContainer
     public var dragStyle:FlxAxes;
     public var canDrag:Bool = true;
     public var dragging:Bool = false;
+    public var selected:Bool = false;
     public var maxDrag:FlxPoint;
     public var minDrag:FlxPoint;
     public var dragCallback:Void->Void;
@@ -75,13 +76,25 @@ class TurnPlayerDraggable extends FlxSpriteContainer
             undragCallback();
     }
 
+    public function select():Void
+    {
+        selected = true;
+        box.color = FlxColor.YELLOW;
+    }
+
+    public function unselect():Void
+    {
+        selected = false;
+        box.color = FlxColor.WHITE;
+    }
+
     override public function update(elapsed:Float)
     {
         super.update(elapsed);
 
         handleDrag();
 
-        if (dragging)
+        if (dragging || selected)
         {
             if (FlxG.mouse.pressedRight || FlxG.keys.pressed.DELETE)
                 box.color = FlxColor.RED;

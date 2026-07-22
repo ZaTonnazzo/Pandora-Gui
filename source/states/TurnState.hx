@@ -18,6 +18,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxSort;
 import flixel.util.FlxTimer;
 import gameObjects.data.TurnPlayer;
+import gameObjects.ui.PandoraButton;
 import gameObjects.ui.PandoraScrollbar;
 import gameObjects.ui.TurnPlayerDraggable;
 import openfl.net.FileReference;
@@ -39,6 +40,7 @@ class TurnState extends PandoraState
     var scoreLabel:FlxText;
     var helpText:FlxText;
     var randomizerBtn:FlxUISpriteButton;
+    var sortBtn:PandoraButton;
     var inputArr:Array<FlxText> = [];
     var plrGroup:FlxTypedGroup<TurnPlayerDraggable>;
     var plrStart:Float = FlxG.height / 2 - 150;
@@ -64,6 +66,7 @@ class TurnState extends PandoraState
 		FlxG.cameras.add(transitionCam, false);
 
         initInputPart();
+        initCharPart();
 
         plrGroup = new FlxTypedGroup<TurnPlayerDraggable>();
         plrGroup.cameras = [scrollCam];
@@ -80,6 +83,17 @@ class TurnState extends PandoraState
         scrollbar.visible = false;
         add(scrollbar);
 	}
+
+    private function initCharPart():Void
+    {
+        var sortLabel:FlxSprite = new FlxSprite().loadGraphic(Paths.image('sort_icon'));
+        sortBtn = new PandoraButton(0, plrStart - 33, 30, 30, 0xFF5A5A5A, sortLabel);
+        sortBtn.clickCallback = function()
+        {
+            sortAndPositionPlrs();
+        };
+        add(sortBtn);
+    }
 
     private function initInputPart():Void
     {
@@ -127,8 +141,8 @@ class TurnState extends PandoraState
         helpText.cameras = [transitionCam];
         add(helpText);
 
-        var divider:FlxSprite = new FlxSprite(0, plrStart - 3).makeGraphic(FlxG.width, 3, FlxColor.WHITE);
-        divider.alpha = 0.3;
+        var divider:FlxSprite = new FlxSprite(0, plrStart - 3).makeGraphic(FlxG.width, 3, FlxColor.GRAY);
+        // divider.alpha = 0.3;
         add(divider);
     }
 
