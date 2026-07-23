@@ -87,7 +87,7 @@ class TurnState extends PandoraState
     private function initCharPart():Void
     {
         var sortLabel:FlxSprite = new FlxSprite().loadGraphic(Paths.image('sort_icon'));
-        sortBtn = new PandoraButton(0, plrStart - 33, 30, 30, 0xFF5A5A5A, sortLabel);
+        sortBtn = new PandoraButton(7, plrStart - 33, 30, 30, 0xFF5A5A5A, sortLabel);
         sortBtn.clickCallback = function()
         {
             sortAndPositionPlrs();
