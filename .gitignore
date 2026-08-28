@@ -2,3 +2,4 @@
 .haxelib/
 export/
 .vscode/launch.json
+art/extracted_sprites/
