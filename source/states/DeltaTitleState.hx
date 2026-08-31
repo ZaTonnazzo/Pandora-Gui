@@ -38,7 +38,7 @@ class DeltaTitleState extends PandoraState
 
         centerEvenlyY(fileGroup, FlxG.height / 2 - 100, FlxG.height / 2 + 100);
 
-        selector = new FlxSprite().loadGraphic(Paths.image('heart_small'));
+        selector = new FlxSprite().loadGraphic(Paths.image('eggs/heart_small'));
         selector.setGraphicSize(Std.int(selector.width * 2));
         selector.updateHitbox();
         add(selector);

@@ -1,5 +1,7 @@
 package;
 
+import flixel.graphics.frames.FlxAtlasFrames;
+
 class Paths
 {
 	public static function getPath(key:String):String
@@ -50,5 +52,10 @@ class Paths
 	public static function fontOTF(key:String):String
 	{
 		return getPath("fonts/") + key + ".otf";
+	}
+
+	public static function getAtlasFrames(key:String):FlxAtlasFrames
+	{
+		return FlxAtlasFrames.fromTexturePackerJson(Paths.image(key), Paths.getPath('images/$key.json'));
 	}
 }

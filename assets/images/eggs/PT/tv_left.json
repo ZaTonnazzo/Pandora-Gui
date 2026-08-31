@@ -1,0 +1,576 @@
+{
+    "frames": {
+        "Nhover0001": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Nhover0002": {
+            "frame": {
+                "x": 173,
+                "y": 1,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Nhover0003": {
+            "frame": {
+                "x": 345,
+                "y": 1,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Noff0001": {
+            "frame": {
+                "x": 517,
+                "y": 1,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Non0001": {
+            "frame": {
+                "x": 689,
+                "y": 1,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Non0002": {
+            "frame": {
+                "x": 517,
+                "y": 210,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Non0003": {
+            "frame": {
+                "x": 689,
+                "y": 210,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Non0004": {
+            "frame": {
+                "x": 1,
+                "y": 419,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Nselect0001": {
+            "frame": {
+                "x": 1,
+                "y": 210,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Nselect0002": {
+            "frame": {
+                "x": 173,
+                "y": 210,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Nselect0003": {
+            "frame": {
+                "x": 345,
+                "y": 210,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Nstatic0001": {
+            "frame": {
+                "x": 517,
+                "y": 210,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Nstatic0002": {
+            "frame": {
+                "x": 689,
+                "y": 210,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Nstatic0003": {
+            "frame": {
+                "x": 1,
+                "y": 419,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Phover0001": {
+            "frame": {
+                "x": 173,
+                "y": 419,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Phover0002": {
+            "frame": {
+                "x": 345,
+                "y": 419,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Phover0003": {
+            "frame": {
+                "x": 517,
+                "y": 419,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Poff0001": {
+            "frame": {
+                "x": 689,
+                "y": 419,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pon0001": {
+            "frame": {
+                "x": 1,
+                "y": 628,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pon0002": {
+            "frame": {
+                "x": 689,
+                "y": 628,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pon0003": {
+            "frame": {
+                "x": 861,
+                "y": 1,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pon0004": {
+            "frame": {
+                "x": 861,
+                "y": 210,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pselect0001": {
+            "frame": {
+                "x": 173,
+                "y": 628,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pselect0002": {
+            "frame": {
+                "x": 345,
+                "y": 628,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pselect0003": {
+            "frame": {
+                "x": 517,
+                "y": 628,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pstatic0001": {
+            "frame": {
+                "x": 689,
+                "y": 628,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pstatic0002": {
+            "frame": {
+                "x": 861,
+                "y": 1,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        },
+        "Pstatic0003": {
+            "frame": {
+                "x": 861,
+                "y": 210,
+                "w": 170,
+                "h": 207
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 170,
+                "h": 207
+            },
+            "sourceSize": {
+                "w": 170,
+                "h": 207
+            }
+        }
+    },
+    "meta": {
+        "app": "https://www.codeandweb.com/texturepacker",
+        "version": "1.0",
+        "image": "tv_left.png",
+        "format": "RGBA8888",
+        "size": {
+            "w": 1032,
+            "h": 836
+        },
+        "scale": "1",
+        "comment": "Created with TexturePacker Online (free version)\nhttps://www.codeandweb.com/texturepacker-online\n\nTexturePacker desktop offers better support for Pixi and Phaser with sprite trimming, better packing algorithms, hardware texture compression, and PNG optimization.\nTry TexturePacker desktop: https://www.codeandweb.com/texturepacker"
+    }
+}

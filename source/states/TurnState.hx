@@ -126,8 +126,7 @@ class TurnState extends PandoraState
         var label:FlxSprite = new FlxSprite().loadGraphic(Paths.image('dice_icon'));
         randomizerBtn = new FlxUISpriteButton(scoreField.x + scoreField.width - 20, scoreField.y + scoreField.height, label, function()
         {
-            var randomScore:Int = FlxG.random.int(1, 20);
-            scoreField.text = (randomScore == 20) ? "20nat" : Std.string(randomScore);
+            d20InScore();
         });
         randomizerBtn.resize(20, 20);
         // randomizerBtn.setAllLabelOffsets(1, 1);
@@ -144,6 +143,12 @@ class TurnState extends PandoraState
         var divider:FlxSprite = new FlxSprite(0, plrStart - 3).makeGraphic(FlxG.width, 3, FlxColor.GRAY);
         // divider.alpha = 0.3;
         add(divider);
+    }
+
+    private function d20InScore():Void
+    {
+        var randomScore:Int = FlxG.random.int(1, 20);
+        scoreField.text = (randomScore == 20) ? "20nat" : Std.string(randomScore);
     }
 
     private function centerEvenlyX(arr:Array<FlxText>, top:Float, bottom:Float):Void
@@ -206,7 +211,7 @@ class TurnState extends PandoraState
         if (onTop)
             onTop = (score >= 20);
 
-        var plr:TurnPlayer = new TurnPlayer(name, score);
+        var plr:TurnPlayer = new TurnPlayer(name, score, 1, 1);
         plr.setNat(onTop);
         resetFields();
 
@@ -383,6 +388,8 @@ class TurnState extends PandoraState
 
         if (FlxG.keys.anyJustPressed([ENTER]))
             addPlr();
+
+        // if (FlxG.keys.justPressed.R) d20InScore();
 
         if (FlxG.keys.justPressed.F3)
             sortAndPositionPlrs();

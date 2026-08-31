@@ -144,7 +144,7 @@ class DepthsState extends PandoraState
         var beam:FlxSprite = new FlxSprite().makeGraphic(1, FlxG.height, FlxColor.RED);
         beam.screenCenter();
         add(beam);
-        heart = new FlxSprite().loadGraphic(Paths.image('heart_blur'));
+        heart = new FlxSprite().loadGraphic(Paths.image('eggs/heart_blur'));
         heart.setGraphicSize(Std.int(heart.width * 3));
         heart.updateHitbox();
         heart.screenCenter();

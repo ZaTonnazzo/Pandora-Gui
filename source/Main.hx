@@ -18,7 +18,8 @@ class Main extends Sprite
     {
         var easterEggs:Array<Class<flixel.FlxState>> = [
 			DepthsState,
-			MoriTitleState
+			MoriTitleState,
+            PTState
 		];
 
         for (state in easterEggs)
