@@ -3,9 +3,9 @@ package substates;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
-import flixel.addons.ui.FlxInputText;
 import flixel.addons.ui.FlxUIButton;
 import flixel.math.FlxPoint;
+import flixel.text.FlxInputText;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
@@ -203,6 +203,8 @@ class EditTurnPlayerSubState extends FlxSubState
                     plr.score = Std.parseInt(text);
                     if (text.toLowerCase().contains("nat"))
                         plr.setNat(true);
+                    else
+                        plr.setNat(false);
                 case "Punti ferita: ":
                     plr.hp = evaluateInputInt(text);
                 case "Classe armatura: ":

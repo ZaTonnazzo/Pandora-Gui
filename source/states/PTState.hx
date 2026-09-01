@@ -333,7 +333,7 @@ class PTState extends PandoraState
             else if (FlxG.keys.anyJustPressed([DOWN, S]))
                 changeCharacter(1);
 
-            if (FlxG.keys.justPressed.ESCAPE)
+            if (FlxG.keys.anyJustPressed([BACKSPACE, ESCAPE, X])) // (FlxG.keys.justPressed.ESCAPE)
                 openSubState(new PTQuitSubState());
 
             if (FlxG.keys.anyJustPressed([ENTER, SPACE, Z]))

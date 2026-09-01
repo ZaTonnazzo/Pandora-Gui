@@ -89,6 +89,9 @@ class PTQuitSubState extends FlxSubState
 
         if (FlxG.keys.anyJustPressed([ENTER, Z, SPACE]))
             acceptSelection();
+
+        if (FlxG.keys.anyJustPressed([BACKSPACE, ESCAPE, X]))
+            close();
     }
 
     private function changeSelection(change:Int = 0):Void

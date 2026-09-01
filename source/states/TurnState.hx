@@ -4,13 +4,13 @@ import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
-import flixel.addons.ui.FlxInputText;
 import flixel.addons.ui.FlxUIButton;
 import flixel.addons.ui.FlxUISpriteButton;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
+import flixel.text.FlxInputText;
 import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.ui.FlxSpriteButton;
@@ -371,7 +371,7 @@ class TurnState extends PandoraState
         {
             txt.text = "";
             if (Std.isOfType(txt, FlxInputText))
-                cast(txt, FlxInputText).hasFocus = false;
+                cast(txt, FlxInputText).endFocus();
         }
     }
 
