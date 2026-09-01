@@ -22,7 +22,8 @@ using StringTools;
 
 /*
     This could be written soooo much better,
-    but idc since it's just an easter egg for a shitty dnd program
+    but idc since it's just an easter egg for a shitty dnd program.
+    Non so perché ogni tanto scrivo i commenti in italiano e ogni tanto in inglese, anche se il programma è interamente in italiano.
 */
 class PTState extends PandoraState
 {

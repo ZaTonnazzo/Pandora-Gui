@@ -153,9 +153,6 @@ class EditTurnPlayerSubState extends FlxSubState
         if (invalid)
             return false;
 
-        if (ac < 0)
-            ac = 0;
-
         return true;
     }
 
@@ -208,7 +205,10 @@ class EditTurnPlayerSubState extends FlxSubState
                 case "Punti ferita: ":
                     plr.hp = evaluateInputInt(text);
                 case "Classe armatura: ":
-                    plr.ac = evaluateInputInt(text);
+                    var newAc = evaluateInputInt(text);
+                    if (newAc < 0)
+                        newAc = 0;
+                    plr.ac = newAc;
             }
         }
         parentButton.refresh(TurnPlayerDraggable.defaultFields());
