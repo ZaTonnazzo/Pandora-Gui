@@ -9,9 +9,17 @@ import flixel.math.FlxPoint;
 import flixel.text.FlxText;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
+import flixel.util.FlxTimer;
 import gameObjects.data.TurnPlayer;
 
 using flixel.util.FlxSpriteUtil;
+
+typedef FieldConfig =
+{
+    getValue:TurnPlayer->String,
+    widthRatio:Float,
+    align:FlxTextAlign
+}
 
 class TurnPlayerDraggable extends FlxSpriteContainer
 {
@@ -25,12 +33,41 @@ class TurnPlayerDraggable extends FlxSpriteContainer
     public var dragCallback:Void->Void;
     public var undragCallback:Void->Void;
     public var deleteCallback:Void->Void;
+    public var doubleClickCallback:Void->Void;
+    public var doubleClickThreshold:Float = 0.2;
 
     var box:FlxSprite;
-    var nameField:FlxText;
-    var scoreField:FlxText;
+    var fields:Array<FlxText> = [];
+    var clickTimer:FlxTimer;
+    var awaitingSecondClick:Bool = false;
 
-    public function new(X:Float = 0, Y:Float = 0, turnPlayer:TurnPlayer, dragStyle:FlxAxes)
+    public static function defaultFields():Array<FieldConfig>
+    {
+        return [
+            {
+                getValue: function(p:TurnPlayer) return p.name,
+                widthRatio: 0.40,
+                align: LEFT
+            },
+            {
+                getValue: function(p:TurnPlayer) return p.getNat() ? (Std.string(p.score) + "nat") : Std.string(p.score),
+                widthRatio: 0.25,
+                align: RIGHT
+            },
+            {
+                getValue: function(p:TurnPlayer) return Std.string(p.hp),
+                widthRatio: 0.175,
+                align: CENTER
+            },
+            {
+                getValue: function(p:TurnPlayer) return Std.string(p.ac),
+                widthRatio: 0.175,
+                align: CENTER
+            }
+        ];
+    }
+
+    public function new(X:Float = 0, Y:Float = 0, turnPlayer:TurnPlayer, dragStyle:FlxAxes, ?fieldConfigs:Array<FieldConfig>)
     {
         super(X, Y);
         player = turnPlayer;
@@ -40,16 +77,43 @@ class TurnPlayerDraggable extends FlxSpriteContainer
         box = box.drawRect(0, 0, box.width, box.height, FlxColor.GRAY, {color: FlxColor.WHITE, thickness: 5});
         add(box);
 
-        nameField = new FlxText(10, 0, box.width - 20, player.name, 32);
-        nameField.setFormat(null, 32, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
-        nameField.y = (get_height() / 2) - (nameField.height / 2);
-        add(nameField);
+        var configs = (fieldConfigs != null) ? fieldConfigs : defaultFields();
+        buildFields(configs);
+    }
 
-        scoreField = new FlxText(nameField.x, nameField.y, nameField.fieldWidth, (player.getNat()) ? (Std.string(player.score) + "nat") : Std.string(player.score), 32);
-        scoreField.setFormat(null, 32, FlxColor.WHITE, RIGHT, OUTLINE_FAST, FlxColor.BLACK);
-        add(scoreField);
+    private function buildFields(configs:Array<FieldConfig>):Void
+    {
+        var offsetX:Float = 0;
+
+        for (i in 0...configs.length)
+        {
+            var cfg = configs[i];
+            var slotWidth:Float = box.width * cfg.widthRatio;
+
+            var text:FlxText = new FlxText(offsetX + 5, 0, slotWidth - 10, cfg.getValue(player), 32);
+            text.wordWrap = false;
+            text.setFormat(null, 32, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
+            text.y = (box.height / 2) - (text.height / 2);
+            add(text);
+            fields.push(text);
+
+            // dividers
+            if (i > 0)
+                box.drawLine(offsetX, 1, offsetX, box.height - 1, {color: FlxColor.WHITE, thickness: 2});
+
+            offsetX += slotWidth;
+        }
 
         FlxMouseEvent.add(this, onDown, null, null, null);
+    }
+
+    public function refresh(configs:Array<FieldConfig>):Void
+    {
+        for (i in 0...fields.length)
+        {
+            if (i < configs.length)
+                fields[i].text = configs[i].getValue(player);
+        }
     }
 
     public function onDown(obj:FlxObject):Void
@@ -57,11 +121,27 @@ class TurnPlayerDraggable extends FlxSpriteContainer
         if (!canDrag)
             return;
 
+        if (awaitingSecondClick)
+        {
+            awaitingSecondClick = false;
+            clickTimer.cancel();
+
+            if (doubleClickCallback != null)
+                doubleClickCallback();
+
+            return;
+        }
+
         dragging = true;
         box.color = FlxColor.YELLOW;
-        
+
         if (dragCallback != null)
             dragCallback();
+
+        awaitingSecondClick = true;
+        clickTimer = new FlxTimer().start(doubleClickThreshold, function(_) {
+            awaitingSecondClick = false;
+        });
     }
 
     public function onUp():Void
@@ -148,7 +228,7 @@ class TurnPlayerDraggable extends FlxSpriteContainer
             deleteCallback();
         if (undragCallback != null)
             undragCallback();
-        
+
         kill();
     }
 }

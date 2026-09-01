@@ -47,6 +47,15 @@ class TitleState extends PandoraState
 		selector = new TextSelector(0, 0, null, 25);
 		add(selector);
 
+		var benvenuto:String = "Benvenuto in un'app fatta col culo da TonnoBuono";
+		var versionShit:FlxText = new FlxText(0, 0, 0, 'Pandora Gui V${lime.app.Application.current.meta.get('version')}\n${benvenuto}', 16);
+		versionShit.setFormat(null, 16, FlxColor.CYAN, RIGHT, OUTLINE_FAST, FlxColor.BLACK);
+		versionShit.setPosition(
+			FlxG.width - versionShit.width,
+			FlxG.height - versionShit.height
+		);
+		add(versionShit);
+
 		changeSelection();
 	}
 

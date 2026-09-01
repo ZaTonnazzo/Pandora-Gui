@@ -24,7 +24,10 @@ class TurnPlayer
     public function setNat(nat:Bool):Void
     {
         if (score < 20)
+        {
+            onTop = false;
             return;
+        }
 
         onTop = nat;
     }

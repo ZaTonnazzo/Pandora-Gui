@@ -17,19 +17,12 @@ class Main extends Sprite
 	private function getStartState():Class<flixel.FlxState>
     {
         var easterEggs:Array<Class<flixel.FlxState>> = [
-			DepthsState,
-			MoriTitleState,
+            DepthsState,
+            MoriTitleState,
             PTState
-		];
+        ];
 
-        for (state in easterEggs)
-        {
-            if (FlxG.random.bool(5))
-            {
-                return state;
-            }
-        }
-
-        return TitleState;
+        var chosen = SaveData.pickStartState(easterEggs);
+        return chosen != null ? chosen : TitleState;
     }
 }

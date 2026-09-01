@@ -21,7 +21,10 @@ import gameObjects.data.TurnPlayer;
 import gameObjects.ui.PandoraButton;
 import gameObjects.ui.PandoraScrollbar;
 import gameObjects.ui.TurnPlayerDraggable;
+import hscript.Interp;
+import hscript.Parser;
 import openfl.net.FileReference;
+import substates.EditTurnPlayerSubState;
 
 using StringTools;
 
@@ -29,6 +32,8 @@ class TurnState extends PandoraState
 {
     public var nameField:FlxInputText;
     public var scoreField:FlxInputText;
+    public var hpField:FlxInputText;
+    public var acField:FlxInputText;
     public var newPlrBtn:FlxUIButton;
     public var isDragging:Bool = false;
     private final helpStr:String =
@@ -36,8 +41,12 @@ class TurnState extends PandoraState
 
     var nomeDesc:String = "Nome: ";
     var scoreDesc:String = "Iniziativa: ";
+    var hpDesc:String = "Punti ferita: ";
+    var acDesc:String = "Classe armatura: ";
     var nameLabel:FlxText;
     var scoreLabel:FlxText;
+    var hpLabel:FlxText;
+    var acLabel:FlxText;
     var helpText:FlxText;
     var randomizerBtn:FlxUISpriteButton;
     var sortBtn:PandoraButton;
@@ -52,6 +61,8 @@ class TurnState extends PandoraState
     var maxScrollY:Float = 0;
     var viewportHeight:Float;
     var playerHeight:Float = 0;
+    var parser:Parser = new Parser();
+    var interp:Interp = new Interp();
 
 	override public function create()
 	{
@@ -103,6 +114,12 @@ class TurnState extends PandoraState
         scoreLabel = new FlxText(0, 40, 0, scoreDesc, 16);
         scoreLabel.setFormat(null, 16, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
         add(scoreLabel);
+        hpLabel = new FlxText(0, 40, 0, hpDesc, 16);
+        hpLabel.setFormat(null, 16, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
+        add(hpLabel);
+        acLabel = new FlxText(0, 40, 0, acDesc, 16);
+        acLabel.setFormat(null, 16, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
+        add(acLabel);
 
         nameField = new FlxInputText(0, scoreLabel.y + scoreLabel.height + 5, 200, "", 32, FlxColor.BLACK, FlxColor.WHITE);
         add(nameField);
@@ -112,12 +129,22 @@ class TurnState extends PandoraState
         add(scoreField);
         inputArr.push(scoreField);
 
-        centerEvenlyX(inputArr, FlxG.width / 4, FlxG.width - FlxG.width / 4);
+        hpField = new FlxInputText(0, nameField.y, 200, "", 32, FlxColor.BLACK, FlxColor.WHITE);
+        add(hpField);
+        inputArr.push(hpField);
+
+        acField = new FlxInputText(0, nameField.y, 200, "", 32, FlxColor.BLACK, FlxColor.WHITE);
+        add(acField);
+        inputArr.push(acField);
+
+        centerEvenlyX(inputArr, FlxG.width / 8, FlxG.width - FlxG.width / 8);
         
         nameLabel.x = nameField.x;
         scoreLabel.x = scoreField.x;
+        hpLabel.x = hpField.x;
+        acLabel.x = acField.x;
 
-        newPlrBtn = new FlxUIButton(0, nameField.y + nameField.height + 15, "Aggiungi", addPlr);
+        newPlrBtn = new FlxUIButton(0, nameField.y + nameField.height + 45, "Aggiungi", addPlr);
         newPlrBtn.label.size = 16;
         newPlrBtn.resize(200, 30);
         newPlrBtn.screenCenter(X);
@@ -178,6 +205,8 @@ class TurnState extends PandoraState
         var name:String = nameField.text;
         var score:Null<Int> = Std.parseInt(scoreField.text);
         var onTop:Bool = scoreField.text.toLowerCase().contains("nat");
+        var hp:Null<Int> = evaluateInputInt(hpField.text);
+        var ac:Null<Int> = evaluateInputInt(acField.text);
 
         var invalid:Bool = false;
         if (score == null || score > 999)
@@ -204,14 +233,40 @@ class TurnState extends PandoraState
                 nameLabel.color = FlxColor.WHITE;
             });
         }
+        if (hp == null)
+        {
+            invalid = true;
+
+            hpLabel.text = "PF invalidi.";
+            hpLabel.color = FlxColor.RED;
+            new FlxTimer().start(1, function(_)
+            {
+                hpLabel.text = hpDesc;
+                hpLabel.color = FlxColor.WHITE;
+            });
+        }
+        if (ac == null)
+        {
+            invalid = true;
+
+            acLabel.text = "CA invalida.";
+            acLabel.color = FlxColor.RED;
+            new FlxTimer().start(1, function(_)
+            {
+                acLabel.text = acDesc;
+                acLabel.color = FlxColor.WHITE;
+            });
+        }
 
         if (invalid)
             return;
 
         if (onTop)
             onTop = (score >= 20);
+        if (ac < 0)
+            ac = 0;
 
-        var plr:TurnPlayer = new TurnPlayer(name, score, 1, 1);
+        var plr:TurnPlayer = new TurnPlayer(name, score, hp, ac);
         plr.setNat(onTop);
         resetFields();
 
@@ -251,6 +306,10 @@ class TurnState extends PandoraState
             plrGroup.remove(draggable, true);
             updateScrollBounds();
         };
+        draggable.doubleClickCallback = function()
+        {
+            openSubState(new EditTurnPlayerSubState(draggable, [for (inp in inputArr) inp.getPosition()]));
+        }
 
         sortAndPositionPlrs();
         updateScrollBounds();
@@ -292,31 +351,28 @@ class TurnState extends PandoraState
         });
     }
 
-    private function parseScore():Null<Int>
+    private function evaluateInputInt(input:String):Null<Int>
     {
-        try {
-            var result = MathParser.evaluate(scoreField.text);
-
-            /*
-            if (result == Std.int(result))
-                scoreField.text = Std.string(Std.int(result));
-            else
-                scoreField.text = Std.string(result);
-            */
-
-            return Std.int(result);
-        } catch (e:Dynamic) {
-            scoreLabel.text = "Errore di calcolo";
-            return null;
+        try
+        {
+            var result = interp.execute(parser.parseString(input));
+            return result;
+        }
+        catch (e)
+        {
+            trace("Invalid expression: " + e);
+            return Std.parseInt(input);
         }
     }
 
     private function resetFields():Void
     {
-        nameField.text = "";
-        nameField.hasFocus = false;
-        scoreField.text = "";
-        scoreField.hasFocus = false;
+        for (txt in inputArr)
+        {
+            txt.text = "";
+            if (Std.isOfType(txt, FlxInputText))
+                cast(txt, FlxInputText).hasFocus = false;
+        }
     }
 
     private function positionPlrs():Void
