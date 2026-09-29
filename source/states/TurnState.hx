@@ -25,6 +25,7 @@ import hscript.Interp;
 import hscript.Parser;
 import openfl.net.FileReference;
 import substates.EditTurnPlayerSubState;
+import substates.TurnQuitSubState;
 
 using StringTools;
 
@@ -457,7 +458,16 @@ class TurnState extends PandoraState
             helpText.visible = !helpText.visible;
 
         if (FlxG.keys.justPressed.ESCAPE)
-            switchState(new TitleState());
+        {
+            #if !debug
+            if (plrGroup.length > 0)
+                openSubState(new TurnQuitSubState());
+            else
+                switchState(new TitleState());
+            #else
+            openSubState(new TurnQuitSubState());
+            #end
+        }
 
         /*
         if (FlxG.mouse.wheel != 0)
@@ -472,13 +482,13 @@ class TurnState extends PandoraState
         */
     }
 
-    private function saveToFile():Void
+    public function saveToFile():Void
     {
         var data:String = "";
         plrGroup.forEach(function(x:TurnPlayerDraggable)
         {
             var plr:TurnPlayer = x.player;
-            data += "- " + plr.name + ", " + plr.score + ((plr.getNat()) ? "nat" : "") + "\n";
+            data += "- " + plr.name + ", " + plr.score + ((plr.getNat()) ? "nat" : "") + ", " + Std.string(plr.hp) + ", " + Std.string(plr.ac) + "\n";
         });
 
         var _file = new FileReference();

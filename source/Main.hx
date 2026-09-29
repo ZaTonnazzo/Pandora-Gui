@@ -22,7 +22,11 @@ class Main extends Sprite
             PTState
         ];
 
+        #if !debug
         var chosen = SaveData.pickStartState(easterEggs);
         return chosen != null ? chosen : TitleState;
+        #else
+        return TitleState;
+        #end
     }
 }
