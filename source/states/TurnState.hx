@@ -488,7 +488,10 @@ class TurnState extends PandoraState
         plrGroup.forEach(function(x:TurnPlayerDraggable)
         {
             var plr:TurnPlayer = x.player;
-            data += "- " + plr.name + ", " + plr.score + ((plr.getNat()) ? "nat" : "") + ", " + Std.string(plr.hp) + ", " + Std.string(plr.ac) + "\n";
+            data += "- " + plr.name + ", "
+                + plr.score + ((plr.getNat()) ? "nat" : "") + ", "
+                + "PF: " + Std.string(plr.hp) + ", "
+                + "CA: " + Std.string(plr.ac) + "\n";
         });
 
         var _file = new FileReference();
