@@ -102,8 +102,12 @@ class TurnQuitSubState extends FlxSubState
         for (btn in optionBtns)
         {
             if (btn.ID == curSelected)
-                cursor.setPosition((btn.x + btn.width / 2) - (cursor.width / 2), btn.y - cursor.height - 5);
-            // cursor.setPosition(btn.x - cursor.width - 5, btn.getMidpoint().y - cursor.height / 2);
+            {
+                FlxTween.completeTweensOf(cursor, ["x", "y"]);
+                FlxTween.tween(cursor, {x: (btn.x + btn.width / 2) - (cursor.width / 2), y: btn.y - cursor.height - 5}, 0.1, {ease: FlxEase.quadOut});
+            }
+            // cursor.setPosition((btn.x + btn.width / 2) - (cursor.width / 2), btn.y - cursor.height - 5);
+            // side // cursor.setPosition(btn.x - cursor.width - 5, btn.getMidpoint().y - cursor.height / 2);
         }
     }
 

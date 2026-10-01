@@ -3,17 +3,12 @@ package states;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.FlxState;
 import flixel.addons.ui.FlxUIButton;
 import flixel.addons.ui.FlxUISpriteButton;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.group.FlxGroup;
 import flixel.math.FlxMath;
-import flixel.math.FlxPoint;
 import flixel.text.FlxInputText;
 import flixel.text.FlxText;
-import flixel.ui.FlxButton;
-import flixel.ui.FlxSpriteButton;
 import flixel.util.FlxColor;
 import flixel.util.FlxSort;
 import flixel.util.FlxTimer;
@@ -37,13 +32,17 @@ class TurnState extends PandoraState
     public var acField:FlxInputText;
     public var newPlrBtn:FlxUIButton;
     public var isDragging:Bool = false;
-    private final helpStr:String =
-        "Tasto destro o Canc mentre trascini un giocatore per eliminarlo.\nF3 per riordinare.\nF2 per salvare in un file di testo.\nF1 per nascondere queste istruzioni.";
 
-    var nomeDesc:String = "Nome: ";
-    var scoreDesc:String = "Iniziativa: ";
-    var hpDesc:String = "Punti ferita: ";
-    var acDesc:String = "Classe armatura: ";
+    private static inline final NAME_DESC:String = "Nome: ";
+    private static inline final SCORE_DESC:String = "Iniziativa: ";
+    private static inline final HP_DESC:String = "Punti ferita: ";
+    private static inline final AC_DESC:String = "Classe armatura: ";
+    private static inline final MAX_SCORE:Int = 999;
+    private static inline var SCROLL_SMOOTHING:Float = 10;
+
+    private final helpStr:String = "Tasto destro o Canc mentre trascini un giocatore per eliminarlo.\n"
+        + "F3 per riordinare.\nF2 per salvare in un file di testo.\nF1 per nascondere queste istruzioni.";
+
     var nameLabel:FlxText;
     var scoreLabel:FlxText;
     var hpLabel:FlxText;
@@ -51,7 +50,7 @@ class TurnState extends PandoraState
     var helpText:FlxText;
     var randomizerBtn:FlxUISpriteButton;
     var sortBtn:PandoraButton;
-    var inputArr:Array<FlxText> = [];
+    var inputArr:Array<FlxInputText> = [];
     var plrGroup:FlxTypedGroup<TurnPlayerDraggable>;
     var plrStart:Float = FlxG.height / 2 - 150;
 
@@ -60,22 +59,26 @@ class TurnState extends PandoraState
     var scrollbar:PandoraScrollbar;
     var targetScrollY:Float = 0;
     var maxScrollY:Float = 0;
-    var viewportHeight:Float;
+    var viewportHeight:Float = 0;
     var playerHeight:Float = 0;
+
     var parser:Parser = new Parser();
     var interp:Interp = new Interp();
+    var flashTimers:Map<FlxText, FlxTimer> = new Map();
 
-	override public function create()
-	{
-		super.create();
-		bgColor = 0xFF0f0f1a;
+    override public function create()
+    {
+        super.create();
+        bgColor = 0xFF0f0f1a;
 
-        scrollCam = new FlxCamera(0, plrStart, FlxG.width, FlxG.height);
-		scrollCam.bgColor = 0xff303053;
+        viewportHeight = FlxG.height - plrStart;
+
+        scrollCam = new FlxCamera(0, Std.int(plrStart), FlxG.width, Std.int(viewportHeight));
+        scrollCam.bgColor = 0xff303053;
         transitionCam = new FlxCamera();
         transitionCam.bgColor = FlxColor.TRANSPARENT;
-		FlxG.cameras.add(scrollCam, false);
-		FlxG.cameras.add(transitionCam, false);
+        FlxG.cameras.add(scrollCam, false);
+        FlxG.cameras.add(transitionCam, false);
 
         initInputPart();
         initCharPart();
@@ -84,66 +87,56 @@ class TurnState extends PandoraState
         plrGroup.cameras = [scrollCam];
         add(plrGroup);
 
-        scrollbar = new PandoraScrollbar(0, 0, FlxG.height - plrStart, 0.1);
+        scrollbar = new PandoraScrollbar(0, 0, viewportHeight, 0.1);
         scrollbar.cameras = [scrollCam];
         scrollbar.x = scrollCam.width - scrollbar.bg.width;
         scrollbar.scrollFactor.set(0, 0);
-        scrollbar.onScroll = function(v:Float)
-        {
-            targetScrollY = v * maxScrollY;
-        };
+        scrollbar.onScroll = function(v:Float) targetScrollY = v * maxScrollY;
         scrollbar.visible = false;
         add(scrollbar);
-	}
+    }
 
     private function initCharPart():Void
     {
         var sortLabel:FlxSprite = new FlxSprite().loadGraphic(Paths.image('sort_icon'));
         sortBtn = new PandoraButton(7, plrStart - 33, 30, 30, 0xFF5A5A5A, sortLabel);
-        sortBtn.clickCallback = function()
-        {
-            sortAndPositionPlrs();
-        };
+        sortBtn.clickCallback = sortAndPositionPlrs;
         add(sortBtn);
+    }
+
+    private function addLabeledInput(desc:String):{label:FlxText, field:FlxInputText}
+    {
+        var txtLabel:FlxText = new FlxText(0, 40, 0, desc, 16);
+        txtLabel.setFormat(null, 16, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
+        add(txtLabel);
+
+        var txtField:FlxInputText = new FlxInputText(0, txtLabel.y + txtLabel.height + 5, 200, "", 32, FlxColor.BLACK, FlxColor.WHITE);
+        add(txtField);
+        inputArr.push(txtField);
+
+        return {label: txtLabel, field: txtField};
     }
 
     private function initInputPart():Void
     {
-        nameLabel = new FlxText(0, 40, 0, nomeDesc, 16);
-        nameLabel.setFormat(null, 16, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
-        add(nameLabel);
-        scoreLabel = new FlxText(0, 40, 0, scoreDesc, 16);
-        scoreLabel.setFormat(null, 16, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
-        add(scoreLabel);
-        hpLabel = new FlxText(0, 40, 0, hpDesc, 16);
-        hpLabel.setFormat(null, 16, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
-        add(hpLabel);
-        acLabel = new FlxText(0, 40, 0, acDesc, 16);
-        acLabel.setFormat(null, 16, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
-        add(acLabel);
+        var name = addLabeledInput(NAME_DESC);
+        var score = addLabeledInput(SCORE_DESC);
+        var hp = addLabeledInput(HP_DESC);
+        var ac = addLabeledInput(AC_DESC);
 
-        nameField = new FlxInputText(0, scoreLabel.y + scoreLabel.height + 5, 200, "", 32, FlxColor.BLACK, FlxColor.WHITE);
-        add(nameField);
-        inputArr.push(nameField);
-
-        scoreField = new FlxInputText(0, nameField.y, 200, "", 32, FlxColor.BLACK, FlxColor.WHITE);
-        add(scoreField);
-        inputArr.push(scoreField);
-
-        hpField = new FlxInputText(0, nameField.y, 200, "", 32, FlxColor.BLACK, FlxColor.WHITE);
-        add(hpField);
-        inputArr.push(hpField);
-
-        acField = new FlxInputText(0, nameField.y, 200, "", 32, FlxColor.BLACK, FlxColor.WHITE);
-        add(acField);
-        inputArr.push(acField);
+        nameLabel = name.label;
+        nameField = name.field;
+        scoreLabel = score.label;
+        scoreField = score.field;
+        hpLabel = hp.label;
+        hpField = hp.field;
+        acLabel = ac.label;
+        acField = ac.field;
 
         centerEvenlyX(inputArr, FlxG.width / 8, FlxG.width - FlxG.width / 8);
-        
-        nameLabel.x = nameField.x;
-        scoreLabel.x = scoreField.x;
-        hpLabel.x = hpField.x;
-        acLabel.x = acField.x;
+
+        for (pair in [name, score, hp, ac])
+            pair.label.x = pair.field.x;
 
         newPlrBtn = new FlxUIButton(0, nameField.y + nameField.height + 45, "Aggiungi", addPlr);
         newPlrBtn.label.size = 16;
@@ -151,204 +144,145 @@ class TurnState extends PandoraState
         newPlrBtn.screenCenter(X);
         add(newPlrBtn);
 
-        var label:FlxSprite = new FlxSprite().loadGraphic(Paths.image('dice_icon'));
-        randomizerBtn = new FlxUISpriteButton(scoreField.x + scoreField.width - 20, scoreField.y + scoreField.height, label, function()
-        {
-            d20InScore();
-        });
+        var diceLabel = new FlxSprite().loadGraphic(Paths.image('dice_icon'));
+        randomizerBtn = new FlxUISpriteButton(scoreField.x + scoreField.width - 20, scoreField.y + scoreField.height, diceLabel, d20InScore);
         randomizerBtn.resize(20, 20);
-        // randomizerBtn.setAllLabelOffsets(1, 1);
         add(randomizerBtn);
 
         helpText = new FlxText(0, 0, 0, helpStr, 16);
         helpText.setFormat(null, 16, FlxColor.WHITE, LEFT);
-        helpText.setPosition(/*FlxG.width - helpText.width*/ 0, FlxG.height - helpText.height);
+        helpText.setPosition(0, FlxG.height - helpText.height);
         helpText.alpha = 0.5;
         helpText.blend = INVERT;
         helpText.cameras = [transitionCam];
         add(helpText);
 
         var divider:FlxSprite = new FlxSprite(0, plrStart - 3).makeGraphic(FlxG.width, 3, FlxColor.GRAY);
-        // divider.alpha = 0.3;
         add(divider);
     }
 
     private function d20InScore():Void
     {
-        var randomScore:Int = FlxG.random.int(1, 20);
-        scoreField.text = (randomScore == 20) ? "20nat" : Std.string(randomScore);
+        var roll:Int = FlxG.random.int(1, 20);
+        scoreField.text = (roll == 20) ? "20nat" : Std.string(roll);
     }
 
-    private function centerEvenlyX(arr:Array<FlxText>, top:Float, bottom:Float):Void
-	{
-		var totalWidth:Float = 0;
+    private function centerEvenlyX(arr:Array<FlxInputText>, left:Float, right:Float):Void
+    {
+        var totalWidth:Float = 0;
         for (txt in arr)
             totalWidth += txt.width;
 
-		var avWidth:Float = bottom - top;
-		var spacing:Float = 0;
-
-		if (arr.length > 1)
-			spacing = (avWidth - totalWidth) / (arr.length - 1);
-
-		var contentHeight:Float = totalWidth + spacing * (arr.length - 1);
-		var leX:Float = top + (avWidth - contentHeight) * 0.5;
-
+        var spacing:Float = arr.length > 1 ? (right - left - totalWidth) / (arr.length - 1) : 0;
+        var x:Float = left;
         for (txt in arr)
         {
-            txt.x = leX;
-			leX += txt.width + spacing;
+            txt.x = x;
+            x += txt.width + spacing;
         }
-	}
+    }
+
+    private function checkField(cond:Bool, label:FlxText, msg:String, normal:String):Bool
+    {
+        if (cond)
+            return true;
+
+        var old = flashTimers.get(label);
+        if (old != null)
+            old.cancel();
+
+        label.text = msg;
+        label.color = FlxColor.RED;
+        flashTimers.set(label, new FlxTimer().start(1, function(_)
+        {
+            label.text = normal;
+            label.color = FlxColor.WHITE;
+        }));
+        return false;
+    }
 
     private function addPlr():Void
     {
-        var name:String = nameField.text;
-        var score:Null<Int> = Std.parseInt(scoreField.text);
-        var onTop:Bool = scoreField.text.toLowerCase().contains("nat");
+        var name = nameField.text.trim();
+        var scoreText = scoreField.text.toLowerCase();
+        var score:Null<Int> = Std.parseInt(scoreText);
         var hp:Null<Int> = evaluateInputInt(hpField.text);
         var ac:Null<Int> = evaluateInputInt(acField.text);
 
-        var invalid:Bool = false;
-        if (score == null || score > 999)
-        {
-            invalid = true;
-
-            scoreLabel.text = "Iniziativa invalida.";
-            scoreLabel.color = FlxColor.RED;
-            new FlxTimer().start(1, function(_)
-            {
-                scoreLabel.text = scoreDesc;
-                scoreLabel.color = FlxColor.WHITE;
-            });
-        }
-        if (name == null || name == "")
-        {
-            invalid = true;
-            
-            nameLabel.text = "Nome invalido.";
-            nameLabel.color = FlxColor.RED;
-            new FlxTimer().start(1, function(_)
-            {
-                nameLabel.text = nomeDesc;
-                nameLabel.color = FlxColor.WHITE;
-            });
-        }
-        if (hp == null)
-        {
-            invalid = true;
-
-            hpLabel.text = "PF invalidi.";
-            hpLabel.color = FlxColor.RED;
-            new FlxTimer().start(1, function(_)
-            {
-                hpLabel.text = hpDesc;
-                hpLabel.color = FlxColor.WHITE;
-            });
-        }
-        if (ac == null)
-        {
-            invalid = true;
-
-            acLabel.text = "CA invalida.";
-            acLabel.color = FlxColor.RED;
-            new FlxTimer().start(1, function(_)
-            {
-                acLabel.text = acDesc;
-                acLabel.color = FlxColor.WHITE;
-            });
-        }
-
-        if (invalid)
+        var results = [
+            checkField(score != null && score <= MAX_SCORE, scoreLabel, "Iniziativa invalida.", SCORE_DESC),
+            checkField(name != "", nameLabel, "Nome invalido.", NAME_DESC),
+            checkField(hp != null, hpLabel, "PF invalidi.", HP_DESC),
+            checkField(ac != null, acLabel, "CA invalida.", AC_DESC)
+        ];
+        if (results.contains(false))
             return;
 
-        if (onTop)
-            onTop = (score >= 20);
-        if (ac < 0)
-            ac = 0;
-
-        var plr:TurnPlayer = new TurnPlayer(name, score, hp, ac);
-        plr.setNat(onTop);
+        var plr = new TurnPlayer(name, score, hp, Std.int(Math.max(0, ac)));
+        plr.setNat(scoreText.contains("nat") && score >= 20);
         resetFields();
 
-        var draggable:TurnPlayerDraggable = new TurnPlayerDraggable(0, 0, plr, Y);
-        // draggable.minDrag = new FlxPoint(0, plrStart - 40);
-        // draggable.maxDrag = new FlxPoint(FlxG.width, FlxG.height - draggable.height);
+        plrGroup.add(createDraggable(plr));
+        sortAndPositionPlrs();
+    }
+
+    private function createDraggable(plr:TurnPlayer):TurnPlayerDraggable
+    {
+        var draggable = new TurnPlayerDraggable(0, 0, plr, Y);
         draggable.cameras = [scrollCam];
         draggable.screenCenter(X);
-        plrGroup.add(draggable);
+
         draggable.dragCallback = function()
         {
             isDragging = true;
-            plrGroup.forEach(function(tpd:TurnPlayerDraggable)
-            {
-                if (tpd != draggable)
-                    tpd.canDrag = false;
-            });
+            setOthersDraggable(draggable, false);
             putOnTop(draggable);
         };
         draggable.undragCallback = function()
         {
             isDragging = false;
-            draggable.canDrag = false;
-            plrGroup.sort((Order, Obj1, Obj2) ->
-			{
-				return FlxSort.byY(Order, Obj1, Obj2);
-			});
+            plrGroup.sort((order, a, b) -> FlxSort.byY(order, a, b));
             positionPlrs();
-
-            plrGroup.forEach(function(tpd:TurnPlayerDraggable)
-            {
-                tpd.canDrag = true;
-            });
+            setOthersDraggable(draggable, true);
+            draggable.canDrag = true;
         };
         draggable.deleteCallback = function()
         {
             plrGroup.remove(draggable, true);
+            positionPlrs();
             updateScrollBounds();
         };
         draggable.doubleClickCallback = function()
         {
             openSubState(new EditTurnPlayerSubState(draggable, [for (inp in inputArr) inp.getPosition()]));
-        }
+        };
 
-        sortAndPositionPlrs();
-        updateScrollBounds();
+        return draggable;
+    }
 
-        /*
-        var result:String = "";
-        for (p in plrArr)
+    private function setOthersDraggable(except:TurnPlayerDraggable, value:Bool):Void
+    {
+        for (tpd in plrGroup)
         {
-            if (result == "")
-                result += "[" + p.name + " | " + p.score + "]";
-            else
-                result += (", " + "[" + p.name + " | " + p.score + "]");
+            if (tpd != except)
+                tpd.canDrag = value;
         }
-        trace(result);
-        */
     }
 
     private function sortAndPositionPlrs():Void
     {
         sortByIniziativa();
         positionPlrs();
+        updateScrollBounds();
     }
 
     private function sortByIniziativa():Void
     {
-        plrGroup.sort(function (i:Int, x:TurnPlayerDraggable, y:TurnPlayerDraggable)
+        plrGroup.sort(function (_, x:TurnPlayerDraggable, y:TurnPlayerDraggable)
         {
-            if (x.player.getNat() && y.player.getNat() == false)
-                return -1;
-            else if (y.player.getNat() && x.player.getNat() == false)
-                return 1;
-
-            if (x.player.score < y.player.score)
-                return 1;
-            else if (x.player.score > y.player.score)
-                return -1;
-
-            return 0;
+            if (x.player.getNat() != y.player.getNat())
+                return x.player.getNat() ? -1 : 1;
+            return y.player.score - x.player.score;
         });
     }
 
@@ -356,14 +290,16 @@ class TurnState extends PandoraState
     {
         try
         {
-            var result = interp.execute(parser.parseString(input));
-            return result;
+            var result:Dynamic = interp.execute(parser.parseString(input));
+            if (Std.isOfType(result, Float))
+                return Std.int(result);
         }
         catch (e)
         {
             trace("Invalid expression: " + e);
-            return Std.parseInt(input);
         }
+
+        return Std.parseInt(input);
     }
 
     private function resetFields():Void
@@ -371,8 +307,7 @@ class TurnState extends PandoraState
         for (txt in inputArr)
         {
             txt.text = "";
-            if (Std.isOfType(txt, FlxInputText))
-                cast(txt, FlxInputText).endFocus();
+            txt.endFocus();
         }
     }
 
@@ -381,20 +316,19 @@ class TurnState extends PandoraState
         for (i in 0...plrGroup.members.length)
         {
             var plr = plrGroup.members[i];
-
             plr.y = plr.height * i;
         }
     }
 
     private function putOnTop(tpd:TurnPlayerDraggable):Void
     {
-        plrGroup.sort(function (i:Int, x:TurnPlayerDraggable, y:TurnPlayerDraggable)
+        plrGroup.sort(function (_, x:TurnPlayerDraggable, y:TurnPlayerDraggable)
         {
             if (x == tpd)
                 return 1;
-            else if (y == tpd)
+            if (y == tpd)
                 return -1;
-
+            
             return 0;
         });
     }
@@ -404,10 +338,8 @@ class TurnState extends PandoraState
         if (playerHeight == 0 && plrGroup.members.length > 0)
             playerHeight = plrGroup.members[0].height;
 
-        viewportHeight = FlxG.height - plrStart;
         var contentHeight:Float = plrGroup.members.length * playerHeight;
-        var ratio:Float = contentHeight > 0 ? Math.min(1, viewportHeight / contentHeight) : 1;
-        scrollbar.setBarRatio(ratio);
+        scrollbar.setBarRatio(contentHeight > 0 ? Math.min(1, viewportHeight / contentHeight) : 1);
 
         maxScrollY = Math.max(0, contentHeight - viewportHeight);
 
@@ -417,43 +349,30 @@ class TurnState extends PandoraState
         targetScrollY = FlxMath.bound(targetScrollY, 0, maxScrollY);
     }
 
-	override public function update(elapsed:Float)
-	{
-		super.update(elapsed);
+    override public function update(elapsed:Float)
+    {
+        super.update(elapsed);
 
-        if (isDragging)
-        {
-            newPlrBtn.active = false;
-            randomizerBtn.active = false;
-        }
-        else
-        {
-            newPlrBtn.active = true;
-            randomizerBtn.active = true;
-        }
+        newPlrBtn.active = !isDragging;
+        randomizerBtn.active = !isDragging;
 
         handleInput();
-        
+
         scrollCam.scroll.y = FlxMath.lerp(scrollCam.scroll.y, targetScrollY, 0.15);
         scrollCam.scroll.y = FlxMath.bound(scrollCam.scroll.y, 0, maxScrollY);
-	}
+    }
 
     private function handleInput():Void
     {
         if (transitioning)
             return;
 
-        if (FlxG.keys.anyJustPressed([ENTER]))
+        if (FlxG.keys.justPressed.ENTER)
             addPlr();
-
-        // if (FlxG.keys.justPressed.R) d20InScore();
-
         if (FlxG.keys.justPressed.F3)
             sortAndPositionPlrs();
-
-        if (FlxG.keys.justPressed.F2)
+        if (FlxG.keys.justPressed.F2 && plrGroup.length > 0)
             saveToFile();
-
         if (FlxG.keys.justPressed.F1)
             helpText.visible = !helpText.visible;
 
@@ -468,33 +387,17 @@ class TurnState extends PandoraState
             openSubState(new TurnQuitSubState());
             #end
         }
-
-        /*
-        if (FlxG.mouse.wheel != 0)
-        {
-            var scrollSpeed:Float = 20;
-            var newY:Float = scrollCam.scroll.y - (FlxG.mouse.wheel * scrollSpeed);
-
-            newY = Math.max(0, Math.min(FlxG.height, newY));
-
-            scrollCam.scroll.y = newY;
-        }
-        */
     }
 
     public function saveToFile():Void
     {
-        var data:String = "";
+        var lines:Array<String> = [];
         plrGroup.forEach(function(x:TurnPlayerDraggable)
         {
-            var plr:TurnPlayer = x.player;
-            data += "- " + plr.name + ", "
-                + plr.score + ((plr.getNat()) ? "nat" : "") + ", "
-                + "PF: " + Std.string(plr.hp) + ", "
-                + "CA: " + Std.string(plr.ac) + "\n";
+            var p:TurnPlayer = x.player;
+            lines.push('- ${p.name}, ${p.score}${p.getNat() ? "nat" : ""}, PF: ${p.hp}, CA: ${p.ac}');
         });
 
-        var _file = new FileReference();
-		_file.save(data, "turni.txt");
+        new FileReference().save(lines.join("\n") + "\n", "turni.txt");
     }
 }
