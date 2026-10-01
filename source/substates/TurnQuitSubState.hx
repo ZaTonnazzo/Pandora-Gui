@@ -7,6 +7,8 @@ import flixel.FlxSubState;
 import flixel.addons.ui.FlxUIButton;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import states.TitleState;
 import states.TurnState;
@@ -65,6 +67,7 @@ class TurnQuitSubState extends FlxSubState
         cursor = new FlxSprite(-100).loadGraphic(Paths.image('finger_small'));
         cursor.setGraphicSize(Std.int(cursor.width * 1.5), Std.int(cursor.height * 1.5));
         cursor.updateHitbox();
+        cursor.angle = 90;
         add(cursor);
     }
 
@@ -99,7 +102,8 @@ class TurnQuitSubState extends FlxSubState
         for (btn in optionBtns)
         {
             if (btn.ID == curSelected)
-                cursor.setPosition(btn.x - cursor.width - 5, btn.getMidpoint().y - cursor.height / 2);
+                cursor.setPosition((btn.x + btn.width / 2) - (cursor.width / 2), btn.y - cursor.height - 5);
+            // cursor.setPosition(btn.x - cursor.width - 5, btn.getMidpoint().y - cursor.height / 2);
         }
     }
 
