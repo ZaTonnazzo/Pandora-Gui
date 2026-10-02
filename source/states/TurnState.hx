@@ -46,7 +46,7 @@ class TurnState extends PandoraState
     private static inline var SCROLL_SMOOTHING:Float = 10;
 
     private final helpStr:String = "Tasto destro o Canc mentre trascini un giocatore per eliminarlo.\n"
-        + "F3 per riordinare.\nF2 per salvare in un file di testo.\nF1 per nascondere queste istruzioni.";
+        + "F3 per salvare in un file di testo.\nF2 per riordinare.\nF1 per nascondere queste istruzioni.";
 
     var nameLabel:FlxText;
     var scoreLabel:FlxText;
@@ -423,7 +423,7 @@ class TurnState extends PandoraState
         }
     }
 
-    public function saveToFile():Void
+    public function saveToFile():FileReference
     {
         var lines:Array<String> = [];
         plrGroup.forEach(function(x:TurnPlayerDraggable)
@@ -432,7 +432,11 @@ class TurnState extends PandoraState
             lines.push('-${p.name}, ${p.score}${p.getNat() ? "nat" : ""}, PF: ${p.hp}, CA: ${p.ac}');
         });
 
-        new FileReference().save(lines.join("\n") + "\n", "turni.pandorapl");
+        var fr:FileReference = new FileReference();
+        fr.save(lines.join("\n") + "\n", "turni.pandorapl");
+        return fr;
+
+        // return false;
     }
 
     public function loadFile():Void

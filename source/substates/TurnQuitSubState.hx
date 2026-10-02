@@ -10,6 +10,8 @@ import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import openfl.events.Event;
+import openfl.net.FileReference;
 import states.TitleState;
 import states.TurnState;
 
@@ -118,17 +120,24 @@ class TurnQuitSubState extends FlxSubState
         switch(optionShit[curSelected].toLowerCase())
         {
             case "salva ed esci":
-                cast(_parentState, TurnState).saveToFile();
-                //close();
-                cast(_parentState, PandoraState).switchState(new TitleState());
+                var saved:FileReference = cast(_parentState, TurnState).saveToFile();
+                saved.addEventListener(Event.SELECT, function(_)
+                {
+                    trace("saved");
+                    switchToTitleState();
+                }, false, 0, true);
 
             case "esci":
-                //close();
-                cast(_parentState, PandoraState).switchState(new TitleState());
+                switchToTitleState();
 
             case "annulla":
                 close();
                 
         }
+    }
+
+    private function switchToTitleState():Void
+    {
+        cast(_parentState, PandoraState).switchState(new TitleState());
     }
 }
