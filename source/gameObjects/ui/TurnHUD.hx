@@ -59,9 +59,9 @@ class TurnHUD extends FlxSpriteContainer
         final openMult:Int = open ? 1 : -1;
 
         FlxTween.completeTweensOf(this, ["x"]);
-        FlxTween.tween(this, {x: x + (200 * openMult)}, 0.4, {ease: FlxEase.quadOut});
+        FlxTween.tween(this, {x: x + (200 * openMult)}, 0.2, {ease: FlxEase.quadOut});
 
         FlxTween.completeTweensOf(arrowBtn.label, ["angle"]);
-        FlxTween.tween(arrowBtn.label, {angle: arrowBtn.label.angle + (180 * openMult)}, 0.8, {ease: FlxEase.elasticOut});
+        FlxTween.tween(arrowBtn.label, {angle: arrowBtn.label.angle + (180 * openMult)}, 0.5, {ease: FlxEase.elasticOut});
     }
 }
