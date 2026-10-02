@@ -123,7 +123,6 @@ class TurnQuitSubState extends FlxSubState
                 var saved:FileReference = cast(_parentState, TurnState).saveToFile();
                 saved.addEventListener(Event.SELECT, function(_)
                 {
-                    trace("saved");
                     switchToTitleState();
                 }, false, 0, true);
 

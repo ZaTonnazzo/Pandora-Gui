@@ -66,6 +66,7 @@ class PTState extends PandoraState
 
     override public function create()
 	{
+        FlxG.mouse.visible = false;
         noiseUnlocked = FlxG.random.bool(90);
         swapUnlocked = FlxG.random.bool(90);
 
@@ -483,6 +484,8 @@ class PTState extends PandoraState
                 selectionSequence(
                     function()
                     {
+                        FlxG.mouse.visible = true;
+                        FlxG.mouse.useSystemCursor = true;
                         switchState(new TurnState());
                     }
                 );

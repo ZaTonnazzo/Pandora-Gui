@@ -16,6 +16,7 @@ import gameObjects.data.TurnPlayer;
 import gameObjects.ui.PandoraButton;
 import gameObjects.ui.PandoraScrollbar;
 import gameObjects.ui.TurnPlayerDraggable;
+import haxe.Json;
 import hscript.Interp;
 import hscript.Parser;
 import openfl.Assets;
@@ -425,15 +426,22 @@ class TurnState extends PandoraState
 
     public function saveToFile():FileReference
     {
-        var lines:Array<String> = [];
+        var lines:Array<Dynamic> = [];
         plrGroup.forEach(function(x:TurnPlayerDraggable)
         {
             var p:TurnPlayer = x.player;
-            lines.push('-${p.name}, ${p.score}${p.getNat() ? "nat" : ""}, PF: ${p.hp}, CA: ${p.ac}');
+            lines.push({
+                name: p.name,
+                score: p.score,
+                nat: p.getNat(),
+                hp: p.hp,
+                ac: p.ac
+            });
         });
 
+        var jsonString:String = Json.stringify(lines, "\t");
         var fr:FileReference = new FileReference();
-        fr.save(lines.join("\n") + "\n", "turni.pandorapl");
+        fr.save(jsonString, "turni.pandorapl");
         return fr;
 
         // return false;
@@ -459,22 +467,24 @@ class TurnState extends PandoraState
 	function _onLoad(E:Event):Void
 	{
 		var fr:FileReference = cast E.target;
-		fr.removeEventListener(Event.COMPLETE, _onLoad);
+        fr.removeEventListener(Event.COMPLETE, _onLoad);
         
-        var loadedData:Array<String> = fr.data.toString().replace("\n", "").split("-");
-        loadedData.shift();
-
-        var loadedPlrs:Array<TurnPlayer> = [];
-        for (i in 0...loadedData.length)
+        try
         {
-            var str:String = loadedData[i].replace("PF: ", "").replace("CA: ", "");
-            var plrData:Array<String> = str.split(", ");
-            loadedPlrs[i] = new TurnPlayer(plrData[0].trim(), Std.parseInt(plrData[1]), Std.parseInt(plrData[2]), Std.parseInt(plrData[3]));
+            var jsonString:String = fr.data.toString();
+            var loadedData:Array<Dynamic> = Json.parse(jsonString);
+
+            for (data in loadedData)
+            {
+                var plr = new TurnPlayer(data.name, data.score, data.hp, data.ac);
+                plr.setNat(data.nat);
+                
+                addPlrFromObject(plr);
+            }
         }
-
-        for (plr in loadedPlrs)
+        catch (e:Dynamic)
         {
-            addPlrFromObject(plr);
+            trace("Error parsing JSON file: " + e);
         }
 	}
 
