@@ -51,7 +51,7 @@ class TurnState extends PandoraState
     public static inline var SCROLL_SMOOTHING:Float = 10;
 
     private final helpStr:String = "Tasto destro o Canc mentre trascini un giocatore per eliminarlo.\n"
-        + "F4 per caricare un file.\nF3 per salvare in un file.\nF2 per riordinare.\nF1 per nascondere queste istruzioni.";
+        + "TAB per aprire il menu laterale.\nF4 per caricare un file.\nF3 per salvare in un file.\nF2 per riordinare.\nF1 per nascondere queste istruzioni.";
 
     var nameLabel:FlxText;
     var scoreLabel:FlxText;
