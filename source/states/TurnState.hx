@@ -9,12 +9,15 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxInputText;
 import flixel.text.FlxText;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import flixel.util.FlxSort;
 import flixel.util.FlxTimer;
 import gameObjects.data.TurnPlayer;
 import gameObjects.ui.PandoraButton;
 import gameObjects.ui.PandoraScrollbar;
+import gameObjects.ui.TurnCounter;
+import gameObjects.ui.TurnHUD;
 import gameObjects.ui.TurnPlayerDraggable;
 import haxe.Json;
 import hscript.Interp;
@@ -59,6 +62,10 @@ class TurnState extends PandoraState
     var loadBtn:PandoraButton;
     var saveBtn:PandoraButton;
     var sortBtn:PandoraButton;
+    var turnHUD:TurnHUD;
+    var turnCounter:TurnCounter;
+    var battleSelector:FlxSprite;
+    var curTurn:Int = 0;
     var inputArr:Array<FlxInputText> = [];
     var plrGroup:FlxTypedGroup<TurnPlayerDraggable>;
     var plrStart:Float = FlxG.height / 2 - 150;
@@ -96,6 +103,13 @@ class TurnState extends PandoraState
         plrGroup.cameras = [scrollCam];
         add(plrGroup);
 
+        battleSelector = new FlxSprite().loadGraphic(Paths.image('finger_small'));
+        battleSelector.setGraphicSize(Std.int(battleSelector.width * 2));
+        battleSelector.updateHitbox();
+        battleSelector.cameras = [scrollCam];
+        battleSelector.visible = battleMode;
+        add(battleSelector);
+
         scrollbar = new PandoraScrollbar(0, 0, viewportHeight, 0.1);
         scrollbar.cameras = [scrollCam];
         scrollbar.x = scrollCam.width - scrollbar.bg.width;
@@ -103,6 +117,18 @@ class TurnState extends PandoraState
         scrollbar.onScroll = function(v:Float) targetScrollY = v * maxScrollY;
         scrollbar.visible = false;
         add(scrollbar);
+
+        turnHUD = new TurnHUD(-200, 0, 200, 100);
+        turnHUD.screenCenter(Y);
+        turnHUD.cameras = [transitionCam];
+        turnHUD.battleCallback = toggleBattle;
+        add(turnHUD);
+
+        turnCounter = new TurnCounter(5);
+        turnCounter.y = FlxG.height - turnCounter.height - 5;
+        turnCounter.cameras = [transitionCam];
+        turnCounter.alpha = battleMode ? 1 : 0;
+        add(turnCounter);
     }
 
     private function initCharPart():Void
@@ -284,9 +310,13 @@ class TurnState extends PandoraState
         };
         draggable.deleteCallback = function()
         {
+            if (battleMode && plrGroup.members[curTurn] == draggable)
+                changePlrTurn(-1);
             plrGroup.remove(draggable, true);
             positionPlrs();
             updateScrollBounds();
+            if (battleMode && curTurn >= plrGroup.length - 1)
+                changePlrTurn(plrGroup.length - 1, true);
         };
         draggable.doubleClickCallback = function()
         {
@@ -385,6 +415,73 @@ class TurnState extends PandoraState
         targetScrollY = FlxMath.bound(targetScrollY, 0, maxScrollY);
     }
 
+    private function toggleBattle():Void
+    {
+        if (plrGroup.length < 2 && !battleMode)
+            return;
+
+        battleMode = !battleMode;
+        curTurn = 0;
+        turnCounter.turn = 0;
+        battleSelector.visible = battleMode;
+
+        if (!battleMode)
+        {
+            turnHUD.battleBtn.label.text = "Battaglia!";
+            FlxTween.completeTweensOf(helpText, ["alpha"]);
+            FlxTween.tween(helpText, {alpha: 1}, 0.2);
+            FlxTween.completeTweensOf(turnCounter, ["alpha"]);
+            FlxTween.tween(turnCounter, {alpha: 0}, 0.2);
+            return;
+        }
+
+        turnHUD.battleBtn.label.text = "Interrompi";
+        FlxTween.completeTweensOf(helpText, ["alpha"]);
+        FlxTween.tween(helpText, {alpha: 0}, 0.2);
+        FlxTween.completeTweensOf(turnCounter, ["alpha"]);
+        FlxTween.tween(turnCounter, {alpha: 1}, 0.2);
+
+        var curPlr = plrGroup.members[curTurn];
+        battleSelector.setPosition(
+            curPlr.x - battleSelector.width - 8,
+            curPlr.y + curPlr.height / 2 - battleSelector.height / 2
+        );
+    }
+
+    private function changePlrTurn(change:Int = 0, force:Bool = false):Void
+    {
+        if (plrGroup.length < 2)
+        {
+            toggleBattle();
+            return;
+        }
+
+        if (force)
+            curTurn = change;
+        else
+            curTurn += change;
+
+        if (curTurn < 0)
+        {
+            if (turnCounter.turn == 0)
+            {
+                curTurn -= change;
+                return;
+            }
+            curTurn = plrGroup.length - 1;
+            turnCounter.turn--;
+        }
+        else if (curTurn > plrGroup.length - 1)
+        {
+            curTurn = 0;
+            turnCounter.turn++;
+        }
+
+        var curPlr = plrGroup.members[curTurn];
+        FlxTween.completeTweensOf(battleSelector, ["x", "y"]);
+        FlxTween.tween(battleSelector, {x: curPlr.x - battleSelector.width - 8, y: curPlr.y + curPlr.height / 2 - battleSelector.height / 2}, 0.1);
+    }
+
     override public function update(elapsed:Float)
     {
         super.update(elapsed);
@@ -413,6 +510,11 @@ class TurnState extends PandoraState
             sortAndPositionPlrs();
         if (FlxG.keys.justPressed.F1 && !battleMode)
             helpText.visible = !helpText.visible;
+
+        if (FlxG.keys.justPressed.DOWN && battleMode)
+            changePlrTurn(1);
+        else if (FlxG.keys.justPressed.UP && battleMode)
+            changePlrTurn(-1);
 
         if (FlxG.keys.justPressed.ESCAPE)
         {
