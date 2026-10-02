@@ -18,6 +18,11 @@ import gameObjects.ui.PandoraScrollbar;
 import gameObjects.ui.TurnPlayerDraggable;
 import hscript.Interp;
 import hscript.Parser;
+import openfl.Assets;
+import openfl.display.Loader;
+import openfl.display.LoaderInfo;
+import openfl.events.Event;
+import openfl.net.FileFilter;
 import openfl.net.FileReference;
 import substates.EditTurnPlayerSubState;
 import substates.TurnQuitSubState;
@@ -49,6 +54,8 @@ class TurnState extends PandoraState
     var acLabel:FlxText;
     var helpText:FlxText;
     var randomizerBtn:FlxUISpriteButton;
+    var loadBtn:PandoraButton;
+    var saveBtn:PandoraButton;
     var sortBtn:PandoraButton;
     var inputArr:Array<FlxInputText> = [];
     var plrGroup:FlxTypedGroup<TurnPlayerDraggable>;
@@ -102,6 +109,20 @@ class TurnState extends PandoraState
         sortBtn = new PandoraButton(7, plrStart - 33, 30, 30, 0xFF5A5A5A, sortLabel);
         sortBtn.clickCallback = sortAndPositionPlrs;
         add(sortBtn);
+
+        var saveLabel:FlxSprite = new FlxSprite().loadGraphic(Paths.image('download_icon'));
+        saveBtn = new PandoraButton(sortBtn.x + sortBtn.width + 5, sortBtn.y, 30, 30, 0xFF5A5A5A, saveLabel);
+        saveBtn.clickCallback = function()
+        {
+            if (plrGroup.length > 0)
+                saveToFile();
+        };
+        add(saveBtn);
+
+        var loadLabel:FlxSprite = new FlxSprite().loadGraphic(Paths.image('upload_icon'));
+        loadBtn = new PandoraButton(saveBtn.x + saveBtn.width + 5, sortBtn.y, 30, 30, 0xFF5A5A5A, loadLabel);
+        loadBtn.clickCallback = loadFile;
+        add(loadBtn);
     }
 
     private function addLabeledInput(desc:String):{label:FlxText, field:FlxInputText}
@@ -221,6 +242,19 @@ class TurnState extends PandoraState
         var plr = new TurnPlayer(name, score, hp, Std.int(Math.max(0, ac)));
         plr.setNat(scoreText.contains("nat") && score >= 20);
         resetFields();
+
+        plrGroup.add(createDraggable(plr));
+        sortAndPositionPlrs();
+    }
+
+    private function addPlrFromObject(plr:TurnPlayer):Void
+    {
+        var results = [
+            plr.score <= MAX_SCORE,
+            plr.name != ""
+        ];
+        if (results.contains(false))
+            return;
 
         plrGroup.add(createDraggable(plr));
         sortAndPositionPlrs();
@@ -369,10 +403,10 @@ class TurnState extends PandoraState
 
         if (FlxG.keys.justPressed.ENTER)
             addPlr();
-        if (FlxG.keys.justPressed.F3)
-            sortAndPositionPlrs();
-        if (FlxG.keys.justPressed.F2 && plrGroup.length > 0)
+        if (FlxG.keys.justPressed.F3 && plrGroup.length > 0)
             saveToFile();
+        if (FlxG.keys.justPressed.F2)
+            sortAndPositionPlrs();
         if (FlxG.keys.justPressed.F1)
             helpText.visible = !helpText.visible;
 
@@ -395,9 +429,53 @@ class TurnState extends PandoraState
         plrGroup.forEach(function(x:TurnPlayerDraggable)
         {
             var p:TurnPlayer = x.player;
-            lines.push('- ${p.name}, ${p.score}${p.getNat() ? "nat" : ""}, PF: ${p.hp}, CA: ${p.ac}');
+            lines.push('-${p.name}, ${p.score}${p.getNat() ? "nat" : ""}, PF: ${p.hp}, CA: ${p.ac}');
         });
 
-        new FileReference().save(lines.join("\n") + "\n", "turni.txt");
+        new FileReference().save(lines.join("\n") + "\n", "turni.pandorapl");
     }
+
+    public function loadFile():Void
+    {
+        var fr:FileReference = new FileReference();
+		fr.addEventListener(Event.SELECT, _onSelect, false, 0, true);
+		fr.addEventListener(Event.CANCEL, _onCancel, false, 0, true);
+		var filters:Array<FileFilter> = new Array<FileFilter>();
+		filters.push(new FileFilter("Pandora Player List", "*.pandorapl"));
+		fr.browse(filters);
+    }
+
+    function _onSelect(E:Event):Void
+	{
+		var fr:FileReference = cast(E.target, FileReference);
+		fr.addEventListener(Event.COMPLETE, _onLoad, false, 0, true);
+		fr.load();
+	}
+
+	function _onLoad(E:Event):Void
+	{
+		var fr:FileReference = cast E.target;
+		fr.removeEventListener(Event.COMPLETE, _onLoad);
+        
+        var loadedData:Array<String> = fr.data.toString().replace("\n", "").split("-");
+        loadedData.shift();
+
+        var loadedPlrs:Array<TurnPlayer> = [];
+        for (i in 0...loadedData.length)
+        {
+            var str:String = loadedData[i].replace("PF: ", "").replace("CA: ", "");
+            var plrData:Array<String> = str.split(", ");
+            loadedPlrs[i] = new TurnPlayer(plrData[0].trim(), Std.parseInt(plrData[1]), Std.parseInt(plrData[2]), Std.parseInt(plrData[3]));
+        }
+
+        for (plr in loadedPlrs)
+        {
+            addPlrFromObject(plr);
+        }
+	}
+
+    function _onCancel(_):Void
+	{
+		trace("cancelled");
+	}
 }

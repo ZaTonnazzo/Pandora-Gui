@@ -15,7 +15,7 @@ import states.TurnState;
 
 class TurnQuitSubState extends FlxSubState
 {
-    var curSelected:Int = -1;
+    var curSelected:Int = 0;
 
     var cursor:FlxSprite;
     var optionBtns:Array<FlxUIButton> = [];
@@ -69,6 +69,8 @@ class TurnQuitSubState extends FlxSubState
         cursor.updateHitbox();
         cursor.angle = 90;
         add(cursor);
+
+        changeSelection();
     }
 
     override public function update(elapsed:Float)

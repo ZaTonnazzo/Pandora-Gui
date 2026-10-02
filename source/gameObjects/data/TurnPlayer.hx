@@ -31,4 +31,9 @@ class TurnPlayer
 
         onTop = nat;
     }
+
+    public function toString():String
+    {
+        return '$name, $score, $hp, $ac';
+    }
 }
