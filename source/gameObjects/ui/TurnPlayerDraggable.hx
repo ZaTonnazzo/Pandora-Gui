@@ -18,7 +18,8 @@ typedef FieldConfig =
 {
     getValue:TurnPlayer->String,
     widthRatio:Float,
-    align:FlxTextAlign
+    align:FlxTextAlign,
+    displayName:String
 }
 
 class TurnPlayerDraggable extends FlxSpriteContainer
@@ -47,22 +48,26 @@ class TurnPlayerDraggable extends FlxSpriteContainer
             {
                 getValue: function(p:TurnPlayer) return p.name,
                 widthRatio: 0.40,
-                align: LEFT
+                align: LEFT,
+                displayName: "Nome"
             },
             {
                 getValue: function(p:TurnPlayer) return p.getNat() ? (Std.string(p.score) + "nat") : Std.string(p.score),
                 widthRatio: 0.25,
-                align: RIGHT
+                align: RIGHT,
+                displayName: "Iniziativa"
             },
             {
                 getValue: function(p:TurnPlayer) return Std.string(p.hp),
                 widthRatio: 0.175,
-                align: CENTER
+                align: CENTER,
+                displayName: "PF"
             },
             {
                 getValue: function(p:TurnPlayer) return Std.string(p.ac),
                 widthRatio: 0.175,
-                align: CENTER
+                align: CENTER,
+                displayName: "CA"
             }
         ];
     }
@@ -118,7 +123,7 @@ class TurnPlayerDraggable extends FlxSpriteContainer
 
     public function onDown(obj:FlxObject):Void
     {
-        if (!canDrag)
+        if (!canDrag || FlxG.state.subState != null)
             return;
 
         if (awaitingSecondClick)

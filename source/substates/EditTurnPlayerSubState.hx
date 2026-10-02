@@ -11,26 +11,27 @@ import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import gameObjects.data.TurnPlayer;
 import gameObjects.ui.TurnPlayerDraggable;
+import gameObjects.ui.TurnPlayerEditable;
 import hscript.Expr;
 import hscript.Interp;
 import hscript.Parser;
+import states.TurnState;
 
 using StringTools;
 
 class EditTurnPlayerSubState extends FlxSubState
 {
     var parentButton:TurnPlayerDraggable;
-    var fieldPos:Array<FlxPoint>;
-    var inputFields:Array<{key:String, input:FlxInputText}>;
-    var labelArr:Array<FlxText> = [];
+    var parentPlr:TurnPlayer;
+    var editable:TurnPlayerEditable;
     
     var parser:Parser = new Parser();
     var interp:Interp = new Interp();
 
-    public function new(parentButton:TurnPlayerDraggable, fieldPos:Array<FlxPoint>)
+    public function new(parentButton:TurnPlayerDraggable)
     {
         this.parentButton = parentButton;
-        this.fieldPos = fieldPos;
+        parentPlr = parentButton.player;
         super();
     }
 
@@ -43,131 +44,12 @@ class EditTurnPlayerSubState extends FlxSubState
         bg.alpha = 0.5;
         add(bg);
 
-        //parentButton.canDrag = false;
-        //add(parentButton);
+        editable = new TurnPlayerEditable(0, 0, parentPlr);
+        editable.screenCenter();
+        add(editable);
 
-        inputFields = [];
-
-        var btnFields = getButtonFields();
-        var i:Int = 0;
-        for (field in btnFields)
-        {
-            var baseInput:String = Std.string(field.value);
-            if (field.key.toLowerCase().contains("iniziativa") && parentButton.player.getNat())
-                baseInput += "nat";
-
-            var inputTxt:FlxInputText = new FlxInputText(
-                fieldPos[i].x,
-                fieldPos[i].y,
-                200,
-                baseInput,
-                32
-            );
-            add(inputTxt);
-            inputFields.push({ key: field.key, input: inputTxt });
-
-            var labelTxt:FlxText = new FlxText(inputTxt.x, inputTxt.y - 28, 0, field.key, 16);
-            labelTxt.setFormat(null, 16, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
-            add(labelTxt);
-            labelArr.push(labelTxt);
-
-            i++;
-        }
-
-        var editBtn:FlxUIButton = new FlxUIButton(0, 158, "Modifica", acceptEdit);
-        editBtn.label.size = 16;
-        editBtn.resize(200, 30);
-        editBtn.screenCenter(X);
-        add(editBtn);
-    }
-
-    private function getButtonFields():Array<{key:String, value:Dynamic}>
-    {
-        var plr:TurnPlayer = parentButton.player;
-        return [
-            { key: "Nome: ", value: plr.name },
-            { key: "Iniziativa: ", value: plr.score },
-            { key: "Punti ferita: ", value: plr.hp },
-            { key: "Classe armatura: ", value: plr.ac }
-        ];
-    }
-
-    private function isValid():Bool
-    {
-        var name:String = inputFields[0].input.text;
-        var score:Null<Int> = Std.parseInt(inputFields[1].input.text);
-        // var onTop:Bool = inputFields[1].input.text.toLowerCase().contains("nat");
-        var hp:Null<Int> = evaluateInputInt(inputFields[2].input.text);
-        var ac:Null<Int> = evaluateInputInt(inputFields[3].input.text);
-
-        var invalid:Bool = false;
-        if (score == null || score > 999)
-        {
-            invalid = true;
-
-            labelArr[1].text = "Iniziativa invalida.";
-            labelArr[1].color = FlxColor.RED;
-            new FlxTimer().start(1, function(_)
-            {
-                labelArr[1].text = inputFields[1].key;
-                labelArr[1].color = FlxColor.WHITE;
-            });
-        }
-        if (name == null || name == "")
-        {
-            invalid = true;
-            
-            labelArr[0].text = "Nome invalido.";
-            labelArr[0].color = FlxColor.RED;
-            new FlxTimer().start(1, function(_)
-            {
-                labelArr[0].text = inputFields[0].key;
-                labelArr[0].color = FlxColor.WHITE;
-            });
-        }
-        if (hp == null)
-        {
-            invalid = true;
-
-            labelArr[2].text = "PF invalidi.";
-            labelArr[2].color = FlxColor.RED;
-            new FlxTimer().start(1, function(_)
-            {
-                labelArr[2].text = inputFields[2].key;
-                labelArr[2].color = FlxColor.WHITE;
-            });
-        }
-        if (ac == null)
-        {
-            invalid = true;
-
-            labelArr[3].text = "CA invalida.";
-            labelArr[3].color = FlxColor.RED;
-            new FlxTimer().start(1, function(_)
-            {
-                labelArr[3].text = inputFields[3].key;
-                labelArr[3].color = FlxColor.WHITE;
-            });
-        }
-
-        if (invalid)
-            return false;
-
-        return true;
-    }
-
-    private function evaluateInputInt(input:String):Null<Int>
-    {
-        try
-        {
-            var result = interp.execute(parser.parseString(input));
-            return result;
-        }
-        catch (e)
-        {
-            trace("Invalid expression: " + e);
-            return Std.parseInt(input);
-        }
+        // parentButton.canDrag = false;
+        // add(parentButton);
     }
 
     override public function update(elapsed:Float)
@@ -181,38 +63,52 @@ class EditTurnPlayerSubState extends FlxSubState
             close();
     }
 
+    private function evaluateInputInt(input:String):Null<Int>
+    {
+        try
+        {
+            var result:Dynamic = interp.execute(parser.parseString(input));
+            if (Std.isOfType(result, Float))
+                return Std.int(result);
+        }
+        catch (e)
+        {
+            trace("Invalid expression: " + e);
+        }
+
+        return Std.parseInt(input);
+    }
+
+    private function checkField(valid:Bool, index:Int, msg:String = "Invalido."):Bool
+    {
+        if (!valid)
+            editable.showError(index, msg);
+        return valid;
+    }
+
     private function acceptEdit():Void
     {
-        if (!isValid())
+        var name = editable.fields[0].text.trim();
+        var score:Null<Int> = Std.parseInt(editable.fields[1].text.trim());
+        var hp:Null<Int> = evaluateInputInt(editable.fields[2].text.trim());
+        var ac:Null<Int> = evaluateInputInt(editable.fields[3].text.trim());
+
+        var results = [
+            checkField(name != "", 0),
+            checkField(score != null && score <= TurnState.MAX_SCORE, 1, "Invalido (max " + TurnState.MAX_SCORE + ")"),
+            checkField(hp != null, 2),
+            checkField(ac != null, 3)
+        ];
+        if (results.contains(false))
             return;
 
-        var plr:TurnPlayer = parentButton.player;
+        parentPlr.name = name;
+        parentPlr.score = score;
+        parentPlr.hp = hp;
+        parentPlr.ac = ac;
+        parentPlr.setNat(editable.fields[1].text.trim().contains("nat"));
 
-        for (f in inputFields)
-        {
-            var text:String = f.input.text;
-
-            switch (f.key)
-            {
-                case "Nome: ":
-                    plr.name = text;
-                case "Iniziativa: ":
-                    plr.score = Std.parseInt(text);
-                    if (text.toLowerCase().contains("nat"))
-                        plr.setNat(true);
-                    else
-                        plr.setNat(false);
-                case "Punti ferita: ":
-                    plr.hp = evaluateInputInt(text);
-                case "Classe armatura: ":
-                    var newAc = evaluateInputInt(text);
-                    if (newAc < 0)
-                        newAc = 0;
-                    plr.ac = newAc;
-            }
-        }
         parentButton.refresh(TurnPlayerDraggable.defaultFields());
-
         close();
     }
 }

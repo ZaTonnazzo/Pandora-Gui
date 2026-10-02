@@ -65,7 +65,7 @@ class PandoraScrollbar extends FlxSpriteContainer
 			}
 			else
 			{
-				var localY:Float = FlxG.mouse.getScreenPosition(camera).y - y - dragOffset;
+				var localY:Float = FlxG.mouse.getViewPosition(camera).y - y - dragOffset;
 				var clamped:Float = FlxMath.bound(localY, 0, trackHeight);
 				scrollPercent = trackHeight > 0 ? clamped / trackHeight : 0;
 			}
@@ -85,12 +85,18 @@ class PandoraScrollbar extends FlxSpriteContainer
 
 	private function onBarDown(sprite:FlxSprite):Void
 	{
+		if (FlxG.state.subState != null)
+            return;
+
 		dragging = true;
-		dragOffset = FlxG.mouse.getScreenPosition(camera).y - (y + bar.y);
+		dragOffset = FlxG.mouse.getViewPosition(camera).y - (y + bar.y);
 	}
 
 	private function onBarOver(sprite:FlxSprite):Void
 	{
+		if (FlxG.state.subState != null)
+            return;
+
 		bar.alpha = 0.9;
 	}
 
@@ -102,7 +108,10 @@ class PandoraScrollbar extends FlxSpriteContainer
 
 	private function onTrackDown(sprite:FlxSprite):Void
 	{
-		var localY:Float = FlxG.mouse.getScreenPosition(camera).y - y - (bar.height / 2);
+		if (FlxG.state.subState != null)
+            return;
+
+		var localY:Float = FlxG.mouse.getViewPosition(camera).y - y - (bar.height / 2);
 		var clamped:Float = FlxMath.bound(localY, 0, trackHeight);
 		scrollPercent = trackHeight > 0 ? clamped / trackHeight : 0;
 		dragging = true;

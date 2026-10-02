@@ -38,16 +38,17 @@ class TurnState extends PandoraState
     public var acField:FlxInputText;
     public var newPlrBtn:FlxUIButton;
     public var isDragging:Bool = false;
+    public var battleMode:Bool = false;
 
     private static inline final NAME_DESC:String = "Nome: ";
     private static inline final SCORE_DESC:String = "Iniziativa: ";
     private static inline final HP_DESC:String = "Punti ferita: ";
     private static inline final AC_DESC:String = "Classe armatura: ";
-    private static inline final MAX_SCORE:Int = 999;
-    private static inline var SCROLL_SMOOTHING:Float = 10;
+    public static inline final MAX_SCORE:Int = 999;
+    public static inline var SCROLL_SMOOTHING:Float = 10;
 
     private final helpStr:String = "Tasto destro o Canc mentre trascini un giocatore per eliminarlo.\n"
-        + "F3 per salvare in un file di testo.\nF2 per riordinare.\nF1 per nascondere queste istruzioni.";
+        + "F4 per caricare un file.\nF3 per salvare in un file.\nF2 per riordinare.\nF1 per nascondere queste istruzioni.";
 
     var nameLabel:FlxText;
     var scoreLabel:FlxText;
@@ -289,7 +290,7 @@ class TurnState extends PandoraState
         };
         draggable.doubleClickCallback = function()
         {
-            openSubState(new EditTurnPlayerSubState(draggable, [for (inp in inputArr) inp.getPosition()]));
+            openSubState(new EditTurnPlayerSubState(draggable));
         };
 
         return draggable;
@@ -404,11 +405,13 @@ class TurnState extends PandoraState
 
         if (FlxG.keys.justPressed.ENTER)
             addPlr();
+        if (FlxG.keys.justPressed.F4)
+            loadFile();
         if (FlxG.keys.justPressed.F3 && plrGroup.length > 0)
             saveToFile();
         if (FlxG.keys.justPressed.F2)
             sortAndPositionPlrs();
-        if (FlxG.keys.justPressed.F1)
+        if (FlxG.keys.justPressed.F1 && !battleMode)
             helpText.visible = !helpText.visible;
 
         if (FlxG.keys.justPressed.ESCAPE)

@@ -1,5 +1,6 @@
 package gameObjects.ui;
 
+import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteContainer;
@@ -45,11 +46,17 @@ class PandoraButton extends FlxSpriteContainer
 
     private function onDown(obj:FlxObject):Void
     {
+        if (FlxG.state.subState != null)
+            return;
+
         overlay.color = FlxColor.BLACK;
     }
 
     private function onUp(obj:FlxObject):Void
     {
+        if (FlxG.state.subState != null)
+            return;
+        
         overlay.color = FlxColor.WHITE;
 
         if (clickCallback != null)
@@ -58,6 +65,9 @@ class PandoraButton extends FlxSpriteContainer
 
     private function onOver(obj:FlxObject):Void
     {
+        if (FlxG.state.subState != null)
+            return;
+        
         overlay.alpha = 0.3;
     }
 
