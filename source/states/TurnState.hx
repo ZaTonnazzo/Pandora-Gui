@@ -59,6 +59,7 @@ class TurnState extends PandoraState
     var acLabel:FlxText;
     var helpText:FlxText;
     var randomizerBtn:FlxUISpriteButton;
+    var editBtn:FlxUISpriteButton;
     var loadBtn:PandoraButton;
     var saveBtn:PandoraButton;
     var sortBtn:PandoraButton;
@@ -198,6 +199,11 @@ class TurnState extends PandoraState
         randomizerBtn.resize(20, 20);
         add(randomizerBtn);
 
+        var editLabel = new FlxSprite().loadGraphic(Paths.image('pencil_icon'));
+        editBtn = new FlxUISpriteButton(newPlrBtn.x + newPlrBtn.width + 8, newPlrBtn.y, editLabel, editCurSelected);
+        editBtn.resize(newPlrBtn.height, newPlrBtn.height);
+        add(editBtn);
+
         helpText = new FlxText(0, 0, 0, helpStr, 16);
         helpText.setFormat(null, 16, FlxColor.WHITE, LEFT);
         helpText.setPosition(0, FlxG.height - helpText.height);
@@ -297,6 +303,8 @@ class TurnState extends PandoraState
         draggable.dragCallback = function()
         {
             isDragging = true;
+            draggable.selected = true;
+            setOthersSelected(draggable, false);
             setOthersDraggable(draggable, false);
             putOnTop(draggable);
         };
@@ -326,12 +334,33 @@ class TurnState extends PandoraState
         return draggable;
     }
 
+    private function editCurSelected():Void
+    {
+        for (tpd in plrGroup)
+        {
+            if (tpd.selected)
+            {
+                openSubState(new EditTurnPlayerSubState(tpd));
+                break;
+            }
+        }
+    }
+
     private function setOthersDraggable(except:TurnPlayerDraggable, value:Bool):Void
     {
         for (tpd in plrGroup)
         {
             if (tpd != except)
                 tpd.canDrag = value;
+        }
+    }
+
+    private function setOthersSelected(except:TurnPlayerDraggable, value:Bool):Void
+    {
+        for (tpd in plrGroup)
+        {
+            if (tpd != except)
+                tpd.selected = value;
         }
     }
 
@@ -515,6 +544,8 @@ class TurnState extends PandoraState
             changePlrTurn(1);
         else if (FlxG.keys.justPressed.UP && battleMode)
             changePlrTurn(-1);
+
+        //if (FlxG.mouse.justPressed && !FlxG.mouse.overlaps(plrGroup, scrollCam)) setOthersSelected(null, false);
 
         if (FlxG.keys.justPressed.ESCAPE)
         {

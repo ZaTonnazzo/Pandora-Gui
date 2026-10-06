@@ -28,7 +28,7 @@ class TurnPlayerDraggable extends FlxSpriteContainer
     public var dragStyle:FlxAxes;
     public var canDrag:Bool = true;
     public var dragging:Bool = false;
-    public var selected:Bool = false;
+    public var selected(default, set):Bool = false;
     public var maxDrag:FlxPoint;
     public var minDrag:FlxPoint;
     public var dragCallback:Void->Void;
@@ -138,7 +138,7 @@ class TurnPlayerDraggable extends FlxSpriteContainer
         }
 
         dragging = true;
-        box.color = FlxColor.YELLOW;
+        // box.color = FlxColor.YELLOW;
 
         if (dragCallback != null)
             dragCallback();
@@ -155,22 +155,17 @@ class TurnPlayerDraggable extends FlxSpriteContainer
             return;
 
         dragging = false;
-        box.color = FlxColor.WHITE;
+        // box.color = FlxColor.WHITE;
 
         if (undragCallback != null)
             undragCallback();
     }
 
-    public function select():Void
+    public function set_selected(v:Bool):Bool
     {
-        selected = true;
-        box.color = FlxColor.YELLOW;
-    }
-
-    public function unselect():Void
-    {
-        selected = false;
-        box.color = FlxColor.WHITE;
+        selected = v;
+        box.color = selected ? FlxColor.YELLOW : FlxColor.WHITE;
+        return selected;
     }
 
     override public function update(elapsed:Float)
